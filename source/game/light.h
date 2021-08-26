@@ -7,9 +7,9 @@
 
 struct Light {
     guVector m_position = { 0, 0, 0 };
-    u32 m_colour = util::white;
-    f32 m_distattn = 5;
-    f32 m_brightness = 5;
+    u32 m_colour        = util::white;
+    f32 m_distattn      = 5;
+    f32 m_brightness    = 5;
 
     const u32 m_index = 0;
     Light(u32 index);
@@ -31,19 +31,13 @@ struct Light {
 
     inline void rngColour()
     {
-        m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF),
-            util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF));
+        m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF),
+                                   util::getRandom<u32>(0x00, 0xFF));
     }
 
-    inline void rngDistAttn()
-    {
-        m_distattn = util::getRandom<u32>(1, 10);
-    }
+    inline void rngDistAttn() { m_distattn = util::getRandom<u32>(1, 10); }
 
-    inline void rngBrightness()
-    {
-        m_brightness = util::getRandom<u32>(1, 10);
-    }
+    inline void rngBrightness() { m_brightness = util::getRandom<u32>(1, 10); }
 };
 
 #endif

@@ -10,7 +10,8 @@ public:
 
     inline void applyCamera()
     {
-        GRRLIB_Camera3dSettings(m_position.x, m_position.y, m_position.z, m_up.x, m_up.y, m_up.z, m_lookAt.x, m_lookAt.y, m_lookAt.z);
+        GRRLIB_Camera3dSettings(m_position.x, m_position.y, m_position.z, m_up.x, m_up.y, m_up.z, m_lookAt.x,
+                                m_lookAt.y, m_lookAt.z);
         GRRLIB_3dMode(m_minDrawDist, m_maxDrawDist, m_fov, m_useTexCoords, m_useNormalCoords);
     }
 

@@ -55,7 +55,7 @@ int main(int argc, char** argv)
      * -> Image fades in
      * -> Image fade stops, waits for a second or two
      * -> Image fades out
-     * 
+     *
      * Logo shows
      * Main menu renders & updates
      * Program state = ProgramState::MainMenu
@@ -76,8 +76,8 @@ int main(int argc, char** argv)
              * the screen but moving them in a direction
              */
             f32 scale = 0.25f;
-            u32 amtX = std::ceil(rmode->fbWidth / (icon->w * scale)) + 1;
-            u32 amtY = std::ceil(rmode->xfbHeight / (icon->h * scale)) + 1;
+            u32 amtX  = std::ceil(rmode->fbWidth / (icon->w * scale)) + 1;
+            u32 amtY  = std::ceil(rmode->xfbHeight / (icon->h * scale)) + 1;
 
             static f32 scrollTimer = 0;
             for (u32 x = 0; x < amtX; x++) {
@@ -85,7 +85,8 @@ int main(int argc, char** argv)
                     // stepX should evaluate to 160
                     f32 stepX = rmode->fbWidth / (amtX - 1);
 
-                    // ((0 * 160) + {scrolling_offset}) - 160 = -160.? (fills the gap left by moving tiles)
+                    // ((0 * 160) + {scrolling_offset}) - 160 = -160.? (fills
+                    // the gap left by moving tiles)
                     // ((1 * 160) + {scrolling_offset}) - 160 = 0.?
                     // ((2 * 160) + {scrolling_offset}) - 160 = 160.?
                     // etc.
@@ -95,13 +96,12 @@ int main(int argc, char** argv)
                     }
 
                     f32 stepY = rmode->xfbHeight / (amtY - 1);
-                    f32 yPos = ((y * stepY) + scrollTimer) - stepY;
+                    f32 yPos  = ((y * stepY) + scrollTimer) - stepY;
                     while (yPos > rmode->xfbHeight) {
                         yPos -= rmode->xfbHeight + stepY;
                     }
 
-                    GRRLIB_DrawImg(xPos, yPos, icon,
-                        0, scale, scale, util::GetColour(0x55, 0x55, 0x55, 0x64));
+                    GRRLIB_DrawImg(xPos, yPos, icon, 0, scale, scale, util::GetColour(0x55, 0x55, 0x55, 0x64));
                 }
             }
             scrollTimer += 0.07571f;
@@ -109,16 +109,16 @@ int main(int argc, char** argv)
 
         switch (gSettings.m_state) {
         case ProgramState::FadeInText: {
-            u8 alpha = std::min(255.0f, fadeTimer);
+            u8 alpha  = std::min(255.0f, fadeTimer);
             f32 scale = 1;
             GRRLIB_DrawImg((rmode->fbWidth / 2) - ((icon->w * scale) / 2),
-                (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
-                util::GetColour(0xFF, 0xFF, 0xFF, alpha));
+                           (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
+                           util::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 255) {
                 static u32 logoTimer = 0;
                 if (logoTimer > 64) {
-                    fadeTimer = 255;
+                    fadeTimer         = 255;
                     gSettings.m_state = ProgramState::FadeOutText;
                 }
                 logoTimer += 1;
@@ -129,11 +129,11 @@ int main(int argc, char** argv)
             break;
         }
         case ProgramState::FadeOutText: {
-            u8 alpha = std::max(0.0f, fadeTimer);
+            u8 alpha  = std::max(0.0f, fadeTimer);
             f32 scale = 1;
             GRRLIB_DrawImg((rmode->fbWidth / 2) - ((icon->w * scale) / 2),
-                (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
-                util::GetColour(0xFF, 0xFF, 0xFF, alpha));
+                           (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
+                           util::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 0) {
                 gSettings.m_state = ProgramState::Menu;
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
         }
         case ProgramState::Menu: {
             const f32 scale = 0.5f;
-            const u32 xpos = (rmode->fbWidth / 2) - ((icon->w * scale) / 2);
+            const u32 xpos  = (rmode->fbWidth / 2) - ((icon->w * scale) / 2);
             GRRLIB_DrawImg(xpos, 64, icon, 0, scale, scale, util::white);
 
             for (MenuItem& item : mainMenu.getItems()) {
@@ -182,7 +182,8 @@ int main(int argc, char** argv)
             for (MenuItem& item : settingsMenu.getItems()) {
                 if (item.m_index == 0) {
                     char text[0x20];
-                    sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x, gSettings.m_sceneObjCount.m_y);
+                    sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x,
+                            gSettings.m_sceneObjCount.m_y);
                     item.m_text = text;
                 } else if (item.m_index == 1) {
                     char text[0x20];
@@ -257,9 +258,9 @@ int main(int argc, char** argv)
 
         case ProgramState::MainGame: {
             guVector& position = gMainCamera->position();
-            position.x = sin(gTimer * 0.05f) * 20;
-            position.z = cos(gTimer * 0.05f) * 20;
-            position.y = 10 + sin(gTimer * 0.01f) * 5;
+            position.x         = sin(gTimer * 0.05f) * 20;
+            position.z         = cos(gTimer * 0.05f) * 20;
+            position.y         = 10 + sin(gTimer * 0.01f) * 5;
 
             guVector& look = gMainCamera->lookAt();
             look.x = look.y = look.z = 0;

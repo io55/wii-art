@@ -15,13 +15,14 @@ struct MenuItem {
     const char* m_text;
     u32 m_textSize = 12; // aka fontSize
 
-    u32 m_defaultCol = util::white;
+    u32 m_defaultCol  = util::white;
     u32 m_selectedCol = util::red;
 
-    bool m_selected = false;
+    bool m_selected   = false;
     bool m_selectable = true;
 
-    inline MenuItem(Vector2<u32> pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol, bool selectable = true, u32 idx = 0)
+    inline MenuItem(Vector2<u32> pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol,
+                    bool selectable = true, u32 idx = 0)
         : m_index(idx)
         , m_position(pos)
         , m_text(text)
@@ -45,7 +46,7 @@ enum class MenuDirection : u8 {
 
 class Menu {
 public:
-    Menu() = default;
+    Menu()  = default;
     ~Menu() = default;
 
     const std::vector<MenuItem>& getItems() const { return m_items; }

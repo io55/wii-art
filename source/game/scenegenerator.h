@@ -9,7 +9,7 @@
 #include "object.h"
 
 struct SceneGenerator {
-    SceneGenerator() = default;
+    SceneGenerator()  = default;
     ~SceneGenerator() = default;
 
     inline void setup()

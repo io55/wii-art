@@ -4,41 +4,33 @@
 #include "../util/colour.h"
 #include <grrlib.h>
 
-enum class ObjectType : u8 {
-    Cube,
-    Torus,
-    Sphere
-};
+enum class ObjectType : u8 { Cube, Torus, Sphere };
 
 struct Object {
     guVector m_position = { 0, 0, 0 };
-    f32 m_size = 1;
-    u32 m_colour = util::white;
-    bool m_wireFrame = false;
+    f32 m_size          = 1;
+    u32 m_colour        = util::white;
+    bool m_wireFrame    = false;
 
     ObjectType m_type;
 
-    Object() = default;
+    Object()  = default;
     ~Object() = default;
 
     inline void rngPosition()
     {
         float extents = 10;
-        m_position.x = util::getRandom<f32>(-extents, extents);
-        m_position.y = util::getRandom<f32>(0.5f, 5.0f);
-        m_position.z = util::getRandom<f32>(-extents, extents);
+        m_position.x  = util::getRandom<f32>(-extents, extents);
+        m_position.y  = util::getRandom<f32>(0.5f, 5.0f);
+        m_position.z  = util::getRandom<f32>(-extents, extents);
     }
 
-    inline void rngScaling()
-    {
-        m_size = util::getRandom<f32>(0.5f, 1.5f);
-    }
+    inline void rngScaling() { m_size = util::getRandom<f32>(0.5f, 1.5f); }
 
     inline void rngColour()
     {
-        m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF),
-            util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF),
-            util::getRandom<u32>(0x33, 0xFF));
+        m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF),
+                                   util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x33, 0xFF));
     }
 
     inline void randomise()

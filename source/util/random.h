@@ -7,8 +7,7 @@
 
 namespace util {
 // Should only be of numeric type
-template <typename T>
-static inline auto getRandom(T minimum, T maximum)
+template <typename T> static inline auto getRandom(T minimum, T maximum)
 {
     if constexpr (std::is_same<T, u32>::value) {
         return (rand() % (maximum - minimum + 1)) + minimum;
@@ -18,12 +17,8 @@ static inline auto getRandom(T minimum, T maximum)
 }
 
 // Should only be of Vector2<T> type
-template <typename T>
-static inline auto getRandom(T extents)
-{
-    return getRandom<T>(extents.m_x, extents.m_y);
-}
+template <typename T> static inline auto getRandom(T extents) { return getRandom<T>(extents.m_x, extents.m_y); }
 
-}
+} // namespace util
 
 #endif

@@ -32,5 +32,5 @@ void Menu::reset(s32 idxResetTo)
     m_items[m_curIdx].m_selected = false;
 
     m_items[idxResetTo].m_selected = true;
-    m_curIdx = 0;
+    m_curIdx                       = 0;
 }
