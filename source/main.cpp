@@ -9,61 +9,13 @@
 #include "icon_jpg.h"
 #include "terminus_ttf.h"
 
+#include "game/object.cpp"
 #include "globals.h"
 #include "math/camera.cpp"
 #include "menu.h"
 #include "settings.h"
 #include "util/colour.h"
 #include "util/random.h"
-
-enum class ObjectType : u8 {
-    Cube,
-    Torus,
-    Sphere
-};
-
-struct Object {
-    guVector m_position;
-    f32 m_size;
-    u32 m_colour = util::white;
-
-    ObjectType m_type;
-
-    void randomisePosition()
-    {
-        m_position.x = util::getRandom<f32>(-7.5f, 7.5f);
-        m_position.y = util::getRandom<f32>(0.5f, 5.0f);
-        m_position.z = util::getRandom<f32>(-7.5f, 7.5f);
-    }
-
-    void randomiseScaling()
-    {
-        m_size = util::getRandom<f32>(0.5f, 1.5f);
-    }
-
-    void randomiseColour()
-    {
-        m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF),
-            util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF),
-            util::getRandom<u32>(0x33, 0xFF));
-    }
-
-    void render()
-    {
-        GRRLIB_ObjectView(m_position.x, m_position.y, m_position.z, 0, 0, 0, m_size, m_size, m_size);
-        switch (m_type) {
-        case ObjectType::Cube:
-            GRRLIB_DrawCube(m_size, true, m_colour);
-            break;
-        case ObjectType::Torus:
-            GRRLIB_DrawTorus(m_size / 2, m_size, 10, 10, true, m_colour);
-            break;
-        case ObjectType::Sphere:
-            GRRLIB_DrawSphere(m_size, 10, 10, true, m_colour);
-            break;
-        }
-    }
-};
 
 struct Light {
     guVector m_position;
