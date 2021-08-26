@@ -161,17 +161,12 @@ int main(int argc, char** argv)
             if (btns_down & WPAD_BUTTON_A) {
                 MenuItem& selected = mainMenu.getSelected();
 
-                // Start
                 if (selected.m_index == 0) {
                     gSettings.m_state = ProgramState::MainGame;
                     gSceneGenerator.setup();
-                }
-                // Options
-                else if (selected.m_index == 1) {
+                } else if (selected.m_index == 1) {
                     gSettings.m_state = ProgramState::Options;
-                }
-                // Exit
-                else if (selected.m_index == 2) {
+                } else if (selected.m_index == 2) {
                     gExit = true;
                 }
             }
@@ -230,7 +225,6 @@ int main(int argc, char** argv)
 
             if (btns_down & WPAD_BUTTON_RIGHT) {
                 MenuItem& item = settingsMenu.getSelected();
-                // Scene object count+
                 if (item.m_index == 0) {
                     gSettings.moveObjectCount(true);
                 } else if (item.m_index == 1) {
@@ -242,7 +236,6 @@ int main(int argc, char** argv)
                 }
             } else if (btns_down & WPAD_BUTTON_LEFT) {
                 MenuItem& item = settingsMenu.getSelected();
-                // Scene object count-
                 if (item.m_index == 0) {
                     gSettings.moveObjectCount(false);
                 } else if (item.m_index == 1) {
