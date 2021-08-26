@@ -26,7 +26,7 @@ INCLUDES	:=
 #---------------------------------------------------------------------------------
 
 CFLAGS	= -g -Ofast -Wall $(MACHDEP) $(INCLUDE)
-CXXFLAGS	=	$(CFLAGS) -std=c++14 -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wno-missing-braces
+CXXFLAGS	=	$(CFLAGS) -std=c++17 -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wno-missing-braces
 
 LDFLAGS	=	-g $(MACHDEP)
 
