@@ -10,7 +10,7 @@
 #include "terminus_ttf.h"
 
 #include "game/light.cpp"
-#include "game/object.cpp"
+#include "game/object.h"
 #include "globals.h"
 #include "math/camera.cpp"
 #include "menu.h"
@@ -32,9 +32,7 @@ struct RandomGenerator {
                     if (gSettings.m_spawnMode & ObjectSpawnMode::Cube) {
                         Object obj;
                         obj.m_type = ObjectType::Cube;
-                        obj.randomiseColour();
-                        obj.randomisePosition();
-                        obj.randomiseScaling();
+                        obj.randomise();
                         m_objects.push_back(obj);
                         break;
                     }
@@ -42,9 +40,7 @@ struct RandomGenerator {
                     if (gSettings.m_spawnMode & ObjectSpawnMode::Torus) {
                         Object obj;
                         obj.m_type = ObjectType::Torus;
-                        obj.randomiseColour();
-                        obj.randomisePosition();
-                        obj.randomiseScaling();
+                        obj.randomise();
                         m_objects.push_back(obj);
                         break;
                     }
@@ -52,9 +48,7 @@ struct RandomGenerator {
                     if (gSettings.m_spawnMode & ObjectSpawnMode::Sphere) {
                         Object obj;
                         obj.m_type = ObjectType::Sphere;
-                        obj.randomiseColour();
-                        obj.randomisePosition();
-                        obj.randomiseScaling();
+                        obj.randomise();
                         m_objects.push_back(obj);
                         break;
                     }
@@ -406,13 +400,13 @@ int main(int argc, char** argv)
                     // SIZE
                     if (item.m_index == 1) {
                         for (auto& obj : sceneGenerator.m_objects) {
-                            obj.randomiseScaling();
+                            obj.rngScaling();
                         }
                     }
                     // COLOURS
                     if (item.m_index == 2) {
                         for (auto& obj : sceneGenerator.m_objects) {
-                            obj.randomiseColour();
+                            obj.rngColour();
                         }
                     }
                     // LIGHTS
