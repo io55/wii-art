@@ -9,6 +9,7 @@
 #include "icon_jpg.h"
 #include "terminus_ttf.h"
 
+#include "game/light.cpp"
 #include "game/object.cpp"
 #include "globals.h"
 #include "math/camera.cpp"
@@ -16,14 +17,6 @@
 #include "settings.h"
 #include "util/colour.h"
 #include "util/random.h"
-
-struct Light {
-    guVector m_position;
-    u32 m_colour;
-    u32 m_index = 0;
-    f32 m_distattn;
-    f32 m_brightness;
-};
 
 struct RandomGenerator {
     std::vector<Object> m_objects;
@@ -76,15 +69,8 @@ struct RandomGenerator {
     {
         m_lights.clear();
         for (u32 i = 0; i < gSettings.m_lightCount.m_x; i++) {
-            Light light;
-            light.m_brightness = util::getRandom<u32>(1, 10);
-            light.m_distattn = util::getRandom<u32>(1, 10);
-            light.m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF),
-                util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF));
-            light.m_index = i;
-            light.m_position.x = util::getRandom<f32>(-7.5f, 7.5f);
-            light.m_position.y = util::getRandom<f32>(2.5f, 10.0f);
-            light.m_position.z = util::getRandom<f32>(-7.5f, 7.5f);
+            Light light(i);
+            light.randomise();
             m_lights.push_back(light);
         }
     }
