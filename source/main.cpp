@@ -174,6 +174,16 @@ int main(int argc, char** argv)
     settingsMenuItems.push_back({ 2, { 64, 64 + 48 + 48 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
     settingsMenu.reset(0);
 
+    /* Main menu flow acts as such:
+     * -> Image fades in
+     * -> Image fade stops, waits for a second or two
+     * -> Image fades out
+     * 
+     * Logo shows
+     * Main menu renders & updates
+     * Program state = ProgramState::MainMenu
+     */
+
     RandomGenerator sceneGenerator;
 
     GRRLIB_SetBackgroundColour(0x00, 0x00, 0x00, 0xFF);
