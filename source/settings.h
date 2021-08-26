@@ -84,16 +84,16 @@ struct Settings {
             }
         }
     }
-    inline void moveSceneCount(const bool fwd)
+    inline void moveObjectCount(const bool fwd)
     {
         if (fwd) {
             m_sceneObjCount.m_x++;
             if (m_sceneObjCount.m_x > m_sceneObjCount.m_y) {
-                m_sceneObjCount.m_x -= m_sceneObjCount.m_y;
+                m_sceneObjCount.m_x = 0;
             }
         } else {
             m_sceneObjCount.m_x--;
-            if (m_sceneObjCount.m_x == 0) {
+            if (m_sceneObjCount.m_x == (s32)-1) {
                 m_sceneObjCount.m_x += m_sceneObjCount.m_y;
             }
         }

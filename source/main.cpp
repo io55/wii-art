@@ -231,7 +231,7 @@ int main(int argc, char** argv)
                 MenuItem& item = settingsMenu.getSelected();
                 // Scene object count+
                 if (item.m_index == 0) {
-                    gSettings.moveSceneCount(true);
+                    gSettings.moveObjectCount(true);
                 } else if (item.m_index == 1) {
                     gSettings.moveWfObjCount(true);
                 } else if (item.m_index == 2) {
@@ -243,7 +243,7 @@ int main(int argc, char** argv)
                 MenuItem& item = settingsMenu.getSelected();
                 // Scene object count-
                 if (item.m_index == 0) {
-                    gSettings.moveSceneCount(false);
+                    gSettings.moveObjectCount(false);
                 } else if (item.m_index == 1) {
                     gSettings.moveWfObjCount(false);
                 } else if (item.m_index == 2) {
