@@ -19,14 +19,16 @@ struct MenuItem {
     u32 m_selectedCol = cl::red;
 
     bool m_selected = false;
+    bool m_selectable = true;
 
-    inline MenuItem(u32 idx, Vector2<u32> pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol)
+    inline MenuItem(u32 idx, Vector2<u32> pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol, bool selectable = true)
         : m_index(idx)
         , m_position(pos)
         , m_text(text)
         , m_textSize(textSize)
         , m_defaultCol(defaultCol)
         , m_selectedCol(selectedCol)
+        , m_selectable(selectable)
     {
     }
 

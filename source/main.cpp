@@ -34,9 +34,11 @@ enum class ObjectSpawnMode : u8 {
 
 struct Settings {
     // VECTOR 2 INSTANCES WORK AS: [CURRENT VALUE, MAX VALUE]
-    Vector2<u32> m_sceneObjCount = { 5, 10 };
+    Vector2<u32> m_sceneObjCount = { 15, 30 };
+    Vector2<u32> m_lightCount = { 1, 5 };
 
     ObjectSpawnMode m_spawnMode = ObjectSpawnMode::All;
+    bool m_showUI = true;
 } gSettings;
 
 enum class ObjectType : u8 {
@@ -66,20 +68,21 @@ struct Object {
 
     void randomisePosition()
     {
-        m_position.x = getRandom(Vector2<f32>({ -5.0f, 5.0f }));
-        m_position.y = getRandom(Vector2<f32>({ 1.0f, 5.0f }));
-        m_position.z = getRandom(Vector2<f32>({ -5.0f, 5.0f }));
+        m_position.x = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
+        m_position.y = getRandom(Vector2<f32>({ 0.5f, 5.0f }));
+        m_position.z = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
     }
 
     void randomiseScaling()
     {
-        m_size = getRandom(Vector2<f32>({ 0.5f, 2.0f }));
+        m_size = getRandom(Vector2<f32>({ 0.5f, 1.5f }));
     }
 
     void randomiseColour()
     {
-        Vector2<u32> rng = { 0x000000FF, 0xFFFFFFFF };
-        m_colour = getRandom(rng);
+        Vector2<u32> rng = { 0x00, 0xFF };
+        Vector2<u32> rngAlpha = { 0x33, 0xAA };
+        m_colour = cl::GetColour(getRandom(rng), getRandom(rng), getRandom(rng), getRandom(rngAlpha));
     }
 
     void render()
@@ -99,8 +102,17 @@ struct Object {
     }
 };
 
+struct Light {
+    guVector m_position;
+    u32 m_colour;
+    u32 m_index = 0;
+    f32 m_distattn;
+    f32 m_brightness;
+};
+
 struct RandomGenerator {
     std::vector<Object> m_objects;
+    std::vector<Light> m_lights;
 
     void setup()
     {
@@ -142,10 +154,33 @@ struct RandomGenerator {
                 }
             }
         }
+
+        randomiseLights();
+    }
+
+    void randomiseLights()
+    {
+        m_lights.clear();
+        for (u32 i = 0; i < gSettings.m_lightCount.m_x; i++) {
+            Light light;
+            Vector2<u32> rng = { 0x00, 0xFF };
+            Vector2<f32> rngF = { 1, 10 };
+            light.m_brightness = getRandom(rngF);
+            light.m_distattn = getRandom(rngF);
+            light.m_colour = cl::GetColour(getRandom(rng), getRandom(rng), getRandom(rng));
+            light.m_index = i;
+            light.m_position.x = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
+            light.m_position.y = getRandom(Vector2<f32>({ 2.5f, 10.0f }));
+            light.m_position.z = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
+            m_lights.push_back(light);
+        }
     }
 
     void render()
     {
+        for (auto& light : m_lights) {
+            GRRLIB_SetLightDiff(light.m_index, light.m_position, 10, 5, light.m_colour);
+        }
         for (auto& obj : m_objects) {
             obj.render();
         }
@@ -217,12 +252,14 @@ int main(int argc, char** argv)
     gameMenuItems.push_back({ 1, { 32, 32 + 24 }, "RANDOMISE SIZE", 26, cl::white, cl::red });
     gameMenuItems.push_back({ 2, { 32, 32 + 24 + 24 }, "RANDOMISE COLOURS", 26, cl::white, cl::red });
     gameMenuItems.push_back({ 3, { 32, 32 + 24 + 24 + 24 }, "RANDOMISE LIGHTS", 26, cl::white, cl::red });
+    gameMenuItems.push_back({ 4, { 32, 32 + 24 + 24 + 24 + 24 }, "PRESS 1 TO HIDE", 26, cl::yellow, cl::yellow, false });
     gameMenu.reset(0);
 
     Menu optionsMenu;
     std::vector<MenuItem>& optionsMenuItems = optionsMenu.getItems();
     optionsMenuItems.push_back({ 0, { 64, 64 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
     optionsMenuItems.push_back({ 1, { 64, 64 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
+    optionsMenuItems.push_back({ 2, { 64, 64 + 48 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
     optionsMenu.reset(0);
 
     RandomGenerator sceneGenerator;
@@ -232,8 +269,8 @@ int main(int argc, char** argv)
         WPAD_ScanPads();
 
         u32 btns_down = WPAD_ButtonsDown(WPAD_CHAN_0);
+        u32 btns_held = WPAD_ButtonsHeld(WPAD_CHAN_0);
         // u32 btns_up = WPAD_ButtonsUp(WPAD_CHAN_0);
-        // u32 btns_held = WPAD_ButtonsHeld(WPAD_CHAN_0);
 
         GRRLIB_2dMode();
 
@@ -362,6 +399,10 @@ int main(int argc, char** argv)
                     char text[0x20];
                     sprintf(text, "Spawn type: [%s]", type);
                     item.m_text = text;
+                } else if (item.m_index == 2) {
+                    char text[0x20];
+                    sprintf(text, "Light count: [%d / %d]", gSettings.m_lightCount.m_x, gSettings.m_lightCount.m_y);
+                    item.m_text = text;
                 }
 
                 item.render(gFont);
@@ -387,6 +428,11 @@ int main(int argc, char** argv)
                     }
                 } else if (item.m_index == 1) {
                     IncrementSpawnMode(true);
+                } else if (item.m_index == 2) {
+                    gSettings.m_lightCount.m_x++;
+                    if (gSettings.m_lightCount.m_x > gSettings.m_lightCount.m_y) {
+                        gSettings.m_lightCount.m_x -= gSettings.m_lightCount.m_y;
+                    }
                 }
             } else if (btns_down & WPAD_BUTTON_LEFT) {
                 MenuItem& item = optionsMenu.getSelected();
@@ -398,6 +444,11 @@ int main(int argc, char** argv)
                     }
                 } else if (item.m_index == 1) {
                     IncrementSpawnMode(false);
+                } else if (item.m_index == 2) {
+                    gSettings.m_lightCount.m_x--;
+                    if (gSettings.m_lightCount.m_x == 0) {
+                        gSettings.m_lightCount.m_x += gSettings.m_lightCount.m_y;
+                    }
                 }
             }
 
@@ -406,53 +457,70 @@ int main(int argc, char** argv)
 
         case ProgramState::MainGame: {
             guVector& position = gMainCamera->position();
-            position.z = -10;
-            position.y = 10;
+            position.x = sin(gTimer * 0.05f) * 20;
+            position.z = cos(gTimer * 0.05f) * 20;
+            position.y = 10 + sin(gTimer * 0.01f) * 5;
 
             guVector& look = gMainCamera->lookAt();
             look.x = look.y = look.z = 0;
             gMainCamera->applyCamera();
 
-            // Plane
-            GRRLIB_ObjectView(0, -1, 0, 0, 0, 0, 10, 0.1f, 10);
-            GRRLIB_DrawCube(1, true, cl::white);
-
             sceneGenerator.render();
+
+            // Plane
+            GRRLIB_ObjectView(0, -1, 0, 0, 0, 0, 50, 0.1f, 50);
+            GRRLIB_DrawCube(1, true, cl::white);
 
             GRRLIB_2dMode();
 
-            GRRLIB_Rectangle(32, 36, 226, 96, cl::GetColour(0x44, 0x44, 0x44), true);
-            for (MenuItem& item : gameMenuItems) {
-                item.render(gFont);
+            if (gSettings.m_showUI) {
+                GRRLIB_Rectangle(32, 36, 226, 96 + 24, cl::GetColour(0x44, 0x44, 0x44), true);
+                for (MenuItem& item : gameMenuItems) {
+                    item.render(gFont);
+                }
+
+                if (btns_down & WPAD_BUTTON_UP) {
+                    gameMenu.moveSelected(MenuDirection::Up);
+                } else if (btns_down & WPAD_BUTTON_DOWN) {
+                    gameMenu.moveSelected(MenuDirection::Down);
+                } else if (btns_down & WPAD_BUTTON_A) {
+                    MenuItem& item = gameMenu.getSelected();
+
+                    // SCENE
+                    if (item.m_index == 0) {
+                        sceneGenerator.setup();
+                    }
+                    // SIZE
+                    if (item.m_index == 1) {
+                        for (auto& obj : sceneGenerator.m_objects) {
+                            obj.randomiseScaling();
+                        }
+                    }
+                    // COLOURS
+                    if (item.m_index == 2) {
+                        for (auto& obj : sceneGenerator.m_objects) {
+                            obj.randomiseColour();
+                        }
+                    }
+                    // LIGHTS
+                    if (item.m_index == 3) {
+                        sceneGenerator.randomiseLights();
+                    }
+                }
+            } else {
+                if (btns_down & WPAD_BUTTON_2) {
+                    sceneGenerator.setup();
+                }
+            }
+
+            if (btns_down & WPAD_BUTTON_1) {
+                gSettings.m_showUI = !gSettings.m_showUI;
             }
 
             if (btns_down & WPAD_BUTTON_B) {
                 state = ProgramState::Menu;
                 mainMenu.reset(0);
             }
-
-            if (btns_down & WPAD_BUTTON_UP) {
-                gameMenu.moveSelected(MenuDirection::Up);
-            } else if (btns_down & WPAD_BUTTON_DOWN) {
-                gameMenu.moveSelected(MenuDirection::Down);
-            } else if (btns_down & WPAD_BUTTON_A) {
-                MenuItem& item = gameMenu.getSelected();
-
-                // SCENE
-                if (item.m_index == 0) {
-                    sceneGenerator.setup();
-                }
-                // SIZE
-                if (item.m_index == 1) {
-                }
-                // COLOURS
-                if (item.m_index == 2) {
-                }
-                // LIGHTS
-                if (item.m_index == 3) {
-                }
-            }
-
             break;
         }
         }
