@@ -1,6 +1,6 @@
 #include "globals.h"
 
-Camera *gMainCamera = nullptr;
+Camera* gMainCamera = nullptr;
 
 Font gFont;
 

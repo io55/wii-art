@@ -4,7 +4,7 @@
 #include "math/camera.h"
 #include "util/font.h"
 
-extern Camera *gMainCamera;
+extern Camera* gMainCamera;
 
 // To get top left corner, X - 2 and Y - 18
 extern Font gFont;
