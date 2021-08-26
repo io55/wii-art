@@ -242,7 +242,7 @@ int main(int argc, char** argv)
     Menu mainMenu;
     std::vector<MenuItem>& mainMenuItems = mainMenu.getItems();
     mainMenuItems.push_back({ 0, { 64, 241 }, "START", 46, cl::white, cl::red });
-    mainMenuItems.push_back({ 1, { 64, 301 }, "OPTIONS", 46, cl::white, cl::red });
+    mainMenuItems.push_back({ 1, { 64, 301 }, "SETTINGS", 46, cl::white, cl::red });
     mainMenuItems.push_back({ 2, { 64, 361 }, "EXIT", 46, cl::white, cl::red });
     mainMenu.reset(0);
 
@@ -255,12 +255,12 @@ int main(int argc, char** argv)
     gameMenuItems.push_back({ 4, { 32, 32 + 24 + 24 + 24 + 24 }, "PRESS 1 TO HIDE", 26, cl::yellow, cl::yellow, false });
     gameMenu.reset(0);
 
-    Menu optionsMenu;
-    std::vector<MenuItem>& optionsMenuItems = optionsMenu.getItems();
-    optionsMenuItems.push_back({ 0, { 64, 64 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
-    optionsMenuItems.push_back({ 1, { 64, 64 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
-    optionsMenuItems.push_back({ 2, { 64, 64 + 48 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
-    optionsMenu.reset(0);
+    Menu settingsMenu;
+    std::vector<MenuItem>& settingsMenuItems = settingsMenu.getItems();
+    settingsMenuItems.push_back({ 0, { 64, 64 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
+    settingsMenuItems.push_back({ 1, { 64, 64 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
+    settingsMenuItems.push_back({ 2, { 64, 64 + 48 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
+    settingsMenu.reset(0);
 
     RandomGenerator sceneGenerator;
 
@@ -374,7 +374,7 @@ int main(int argc, char** argv)
             break;
         }
         case ProgramState::Options: {
-            for (MenuItem& item : optionsMenuItems) {
+            for (MenuItem& item : settingsMenuItems) {
                 if (item.m_index == 0) {
                     char text[0x20];
                     sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x, gSettings.m_sceneObjCount.m_y);
@@ -409,9 +409,9 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_UP) {
-                optionsMenu.moveSelected(MenuDirection::Up);
+                settingsMenu.moveSelected(MenuDirection::Up);
             } else if (btns_down & WPAD_BUTTON_DOWN) {
-                optionsMenu.moveSelected(MenuDirection::Down);
+                settingsMenu.moveSelected(MenuDirection::Down);
             }
 
             if (btns_down & WPAD_BUTTON_B) {
@@ -419,7 +419,7 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_RIGHT) {
-                MenuItem& item = optionsMenu.getSelected();
+                MenuItem& item = settingsMenu.getSelected();
                 // Scene object count+
                 if (item.m_index == 0) {
                     gSettings.m_sceneObjCount.m_x++;
@@ -435,7 +435,7 @@ int main(int argc, char** argv)
                     }
                 }
             } else if (btns_down & WPAD_BUTTON_LEFT) {
-                MenuItem& item = optionsMenu.getSelected();
+                MenuItem& item = settingsMenu.getSelected();
                 // Scene object count-
                 if (item.m_index == 0) {
                     gSettings.m_sceneObjCount.m_x--;
