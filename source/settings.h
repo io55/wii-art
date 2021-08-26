@@ -28,6 +28,7 @@ static inline u8 operator&(ObjectSpawnMode a, ObjectSpawnMode b)
 struct Settings {
     // Vector2 instances are used like: [CURRENT VALUE, MAX VALUE]
     Vector2<u32> m_sceneObjCount = { 25, 50 };
+    Vector2<u32> m_wfObjCount = { 25, 50 };
     Vector2<u32> m_lightCount = { 1, 3 };
 
     ObjectSpawnMode m_spawnMode = ObjectSpawnMode::All;
@@ -94,6 +95,20 @@ struct Settings {
             m_sceneObjCount.m_x--;
             if (m_sceneObjCount.m_x == 0) {
                 m_sceneObjCount.m_x += m_sceneObjCount.m_y;
+            }
+        }
+    }
+    inline void moveWfObjCount(const bool fwd)
+    {
+        if (fwd) {
+            m_wfObjCount.m_x++;
+            if (m_wfObjCount.m_x > m_wfObjCount.m_y) {
+                m_wfObjCount.m_x = 0;
+            }
+        } else {
+            m_wfObjCount.m_x--;
+            if ((s32)m_wfObjCount.m_x == (s32)-1) {
+                m_wfObjCount.m_x += m_wfObjCount.m_y;
             }
         }
     }

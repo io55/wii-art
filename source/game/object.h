@@ -14,6 +14,7 @@ struct Object {
     guVector m_position = { 0, 0, 0 };
     f32 m_size = 1;
     u32 m_colour = util::white;
+    bool m_wireFrame = false;
 
     ObjectType m_type;
 
@@ -52,13 +53,13 @@ struct Object {
         GRRLIB_ObjectView(m_position.x, m_position.y, m_position.z, 0, 0, 0, m_size, m_size, m_size);
         switch (m_type) {
         case ObjectType::Cube:
-            GRRLIB_DrawCube(m_size, true, m_colour);
+            GRRLIB_DrawCube(m_size, !m_wireFrame, m_colour);
             break;
         case ObjectType::Torus:
-            GRRLIB_DrawTorus(m_size / 2, m_size, 10, 10, true, m_colour);
+            GRRLIB_DrawTorus(m_size / 2, m_size, 10, 10, !m_wireFrame, m_colour);
             break;
         case ObjectType::Sphere:
-            GRRLIB_DrawSphere(m_size, 10, 10, true, m_colour);
+            GRRLIB_DrawSphere(m_size, 10, 10, !m_wireFrame, m_colour);
             break;
         }
     }

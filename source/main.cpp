@@ -48,6 +48,7 @@ int main(int argc, char** argv)
     settingsMenu.addMenuItem({ { 64, 64 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
     settingsMenu.addMenuItem({ { 64, 112 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
     settingsMenu.addMenuItem({ { 64, 160 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
+    settingsMenu.addMenuItem({ { 64, 208 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
     settingsMenu.reset(0);
 
     /* Main menu flow acts as such:
@@ -184,6 +185,10 @@ int main(int argc, char** argv)
                     sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x, gSettings.m_sceneObjCount.m_y);
                     item.m_text = text;
                 } else if (item.m_index == 1) {
+                    char text[0x20];
+                    sprintf(text, "WF_Obj count: [%d / %d]", gSettings.m_wfObjCount.m_x, gSettings.m_wfObjCount.m_y);
+                    item.m_text = text;
+                } else if (item.m_index == 2) {
                     char type[0x10];
                     switch (gSettings.m_spawnMode) {
                     case ObjectSpawnMode::All:
@@ -203,7 +208,7 @@ int main(int argc, char** argv)
                     char text[0x20];
                     sprintf(text, "Spawn type: [%s]", type);
                     item.m_text = text;
-                } else if (item.m_index == 2) {
+                } else if (item.m_index == 3) {
                     char text[0x20];
                     sprintf(text, "Light count: [%d / %d]", gSettings.m_lightCount.m_x, gSettings.m_lightCount.m_y);
                     item.m_text = text;
@@ -228,8 +233,10 @@ int main(int argc, char** argv)
                 if (item.m_index == 0) {
                     gSettings.moveSceneCount(true);
                 } else if (item.m_index == 1) {
-                    gSettings.moveSpawnMode(true);
+                    gSettings.moveWfObjCount(true);
                 } else if (item.m_index == 2) {
+                    gSettings.moveSpawnMode(true);
+                } else if (item.m_index == 3) {
                     gSettings.moveLightCount(true);
                 }
             } else if (btns_down & WPAD_BUTTON_LEFT) {
@@ -238,12 +245,13 @@ int main(int argc, char** argv)
                 if (item.m_index == 0) {
                     gSettings.moveSceneCount(false);
                 } else if (item.m_index == 1) {
-                    gSettings.moveSpawnMode(false);
+                    gSettings.moveWfObjCount(false);
                 } else if (item.m_index == 2) {
+                    gSettings.moveSpawnMode(false);
+                } else if (item.m_index == 3) {
                     gSettings.moveLightCount(false);
                 }
             }
-
             break;
         }
 
@@ -258,10 +266,6 @@ int main(int argc, char** argv)
             gMainCamera->applyCamera();
 
             gSceneGenerator.render();
-
-            // Plane
-            GRRLIB_ObjectView(0, -1, 0, 0, 0, 0, 50, 0.1f, 50);
-            GRRLIB_DrawCube(1, true, util::white);
 
             GRRLIB_2dMode();
 

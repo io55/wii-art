@@ -23,7 +23,12 @@ struct SceneGenerator {
         for (auto& light : m_lights) {
             GRRLIB_SetLightDiff(light.m_index, light.m_position, 10, 5, light.m_colour);
         }
+
         for (auto& obj : m_objects) {
+            obj.render();
+        }
+
+        for (auto& obj : m_wfObjects) {
             obj.render();
         }
     }
@@ -32,6 +37,7 @@ struct SceneGenerator {
     void randomiseLights();
 
     std::vector<Object> m_objects;
+    std::vector<Object> m_wfObjects;
     std::vector<Light> m_lights;
 } gSceneGenerator;
 
