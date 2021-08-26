@@ -34,6 +34,69 @@ struct Settings {
     bool m_showUI = true;
 
     ProgramState m_state = ProgramState::FadeInText;
+
+    inline void moveSpawnMode(const bool fwd)
+    {
+        if (fwd) {
+            switch (m_spawnMode) {
+            case ObjectSpawnMode::Cube:
+                m_spawnMode = ObjectSpawnMode::Torus;
+                break;
+            case ObjectSpawnMode::Torus:
+                m_spawnMode = ObjectSpawnMode::Sphere;
+                break;
+            case ObjectSpawnMode::Sphere:
+                m_spawnMode = ObjectSpawnMode::All;
+                break;
+            case ObjectSpawnMode::All:
+                m_spawnMode = ObjectSpawnMode::Cube;
+                break;
+            }
+        } else {
+            switch (m_spawnMode) {
+            case ObjectSpawnMode::Cube:
+                m_spawnMode = ObjectSpawnMode::All;
+                break;
+            case ObjectSpawnMode::Torus:
+                m_spawnMode = ObjectSpawnMode::Cube;
+                break;
+            case ObjectSpawnMode::Sphere:
+                m_spawnMode = ObjectSpawnMode::Torus;
+                break;
+            case ObjectSpawnMode::All:
+                m_spawnMode = ObjectSpawnMode::Sphere;
+                break;
+            }
+        }
+    }
+    inline void moveLightCount(const bool fwd)
+    {
+        if (fwd) {
+            m_lightCount.m_x++;
+            if (m_lightCount.m_x > m_lightCount.m_y) {
+                m_lightCount.m_x -= m_lightCount.m_y;
+            }
+        } else {
+            m_lightCount.m_x--;
+            if (m_lightCount.m_x == 0) {
+                m_lightCount.m_x += m_lightCount.m_y;
+            }
+        }
+    }
+    inline void moveSceneCount(const bool fwd)
+    {
+        if (fwd) {
+            m_sceneObjCount.m_x++;
+            if (m_sceneObjCount.m_x > m_sceneObjCount.m_y) {
+                m_sceneObjCount.m_x -= m_sceneObjCount.m_y;
+            }
+        } else {
+            m_sceneObjCount.m_x--;
+            if (m_sceneObjCount.m_x == 0) {
+                m_sceneObjCount.m_x += m_sceneObjCount.m_y;
+            }
+        }
+    }
 } gSettings;
 
 #endif

@@ -15,42 +15,6 @@
 #include "menu.h"
 #include "settings.h"
 
-static void IncrementSpawnMode(const bool fwd)
-{
-    ObjectSpawnMode& mode = gSettings.m_spawnMode;
-    if (fwd) {
-        switch (mode) {
-        case ObjectSpawnMode::Cube:
-            mode = ObjectSpawnMode::Torus;
-            break;
-        case ObjectSpawnMode::Torus:
-            mode = ObjectSpawnMode::Sphere;
-            break;
-        case ObjectSpawnMode::Sphere:
-            mode = ObjectSpawnMode::All;
-            break;
-        case ObjectSpawnMode::All:
-            mode = ObjectSpawnMode::Cube;
-            break;
-        }
-    } else {
-        switch (mode) {
-        case ObjectSpawnMode::Cube:
-            mode = ObjectSpawnMode::All;
-            break;
-        case ObjectSpawnMode::Torus:
-            mode = ObjectSpawnMode::Cube;
-            break;
-        case ObjectSpawnMode::Sphere:
-            mode = ObjectSpawnMode::Torus;
-            break;
-        case ObjectSpawnMode::All:
-            mode = ObjectSpawnMode::Sphere;
-            break;
-        }
-    }
-}
-
 int main(int argc, char** argv)
 {
     srand(time(NULL));
@@ -262,33 +226,21 @@ int main(int argc, char** argv)
                 MenuItem& item = settingsMenu.getSelected();
                 // Scene object count+
                 if (item.m_index == 0) {
-                    gSettings.m_sceneObjCount.m_x++;
-                    if (gSettings.m_sceneObjCount.m_x > gSettings.m_sceneObjCount.m_y) {
-                        gSettings.m_sceneObjCount.m_x -= gSettings.m_sceneObjCount.m_y;
-                    }
+                    gSettings.moveSceneCount(true);
                 } else if (item.m_index == 1) {
-                    IncrementSpawnMode(true);
+                    gSettings.moveSpawnMode(true);
                 } else if (item.m_index == 2) {
-                    gSettings.m_lightCount.m_x++;
-                    if (gSettings.m_lightCount.m_x > gSettings.m_lightCount.m_y) {
-                        gSettings.m_lightCount.m_x -= gSettings.m_lightCount.m_y;
-                    }
+                    gSettings.moveLightCount(true);
                 }
             } else if (btns_down & WPAD_BUTTON_LEFT) {
                 MenuItem& item = settingsMenu.getSelected();
                 // Scene object count-
                 if (item.m_index == 0) {
-                    gSettings.m_sceneObjCount.m_x--;
-                    if (gSettings.m_sceneObjCount.m_x == 0) {
-                        gSettings.m_sceneObjCount.m_x += gSettings.m_sceneObjCount.m_y;
-                    }
+                    gSettings.moveSceneCount(false);
                 } else if (item.m_index == 1) {
-                    IncrementSpawnMode(false);
+                    gSettings.moveSpawnMode(false);
                 } else if (item.m_index == 2) {
-                    gSettings.m_lightCount.m_x--;
-                    if (gSettings.m_lightCount.m_x == 0) {
-                        gSettings.m_lightCount.m_x += gSettings.m_lightCount.m_y;
-                    }
+                    gSettings.moveLightCount(false);
                 }
             }
 
