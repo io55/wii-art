@@ -6,18 +6,6 @@
 #include <type_traits>
 
 namespace util {
-// X is min, Y is max
-static inline u32 getRandom(Vector2<u32> extents)
-{
-    return (rand() % (extents.m_y - extents.m_x + 1)) + extents.m_x;
-}
-
-// X is min, Y is max
-static inline f32 getRandom(Vector2<f32> extents)
-{
-    return extents.m_x + (rand() / (float)RAND_MAX) * (extents.m_y - extents.m_x);
-}
-
 // Should only be of numeric type
 template <typename T>
 static inline auto getRandom(T minimum, T maximum)
