@@ -9,15 +9,11 @@
 #include "icon_jpg.h"
 #include "terminus_ttf.h"
 
-#include "game/light.cpp"
-#include "game/object.h"
-#include "game/scenegenerator.h"
+#include "game/scenegenerator.cpp"
 #include "globals.h"
 #include "math/camera.cpp"
 #include "menu.h"
 #include "settings.h"
-#include "util/colour.h"
-#include "util/random.h"
 
 static void IncrementSpawnMode(const bool fwd)
 {

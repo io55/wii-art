@@ -5,7 +5,7 @@
 
 #include <grrlib.h>
 
-#include "light.h"
+#include "light.cpp"
 #include "object.h"
 
 struct SceneGenerator {
