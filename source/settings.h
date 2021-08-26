@@ -1,6 +1,8 @@
 #ifndef _SETTINGS_H
 #define _SETTINGS_H
 
+#include "math/vector2.h"
+
 enum class ProgramState : u8 {
     FadeInText,
     FadeOutText,

@@ -83,7 +83,7 @@ int main(int argc, char** argv)
             for (u32 x = 0; x < amtX; x++) {
                 for (u32 y = 0; y < amtY; y++) {
                     // stepX should evaluate to 160
-                    f32 stepX = rmode->fbWidth / (amtX - 1);
+                    f32 stepX = rmode->fbWidth / (amtX - static_cast<f32>(1));
 
                     // ((0 * 160) + {scrolling_offset}) - 160 = -160.? (fills
                     // the gap left by moving tiles)
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
                         xPos -= rmode->fbWidth + stepX;
                     }
 
-                    f32 stepY = rmode->xfbHeight / (amtY - 1);
+                    f32 stepY = rmode->xfbHeight / (amtY - static_cast<f32>(1));
                     f32 yPos  = ((y * stepY) + scrollTimer) - stepY;
                     while (yPos > rmode->xfbHeight) {
                         yPos -= rmode->xfbHeight + stepY;
@@ -111,8 +111,8 @@ int main(int argc, char** argv)
         case ProgramState::FadeInText: {
             u8 alpha  = std::min(255.0f, fadeTimer);
             f32 scale = 1;
-            GRRLIB_DrawImg((rmode->fbWidth / 2) - ((icon->w * scale) / 2),
-                           (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
+            GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2),
+                           (rmode->xfbHeight / static_cast<float>(2)) - ((icon->h * scale) / 2), icon, 0, scale, scale,
                            util::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 255) {
@@ -131,8 +131,8 @@ int main(int argc, char** argv)
         case ProgramState::FadeOutText: {
             u8 alpha  = std::max(0.0f, fadeTimer);
             f32 scale = 1;
-            GRRLIB_DrawImg((rmode->fbWidth / 2) - ((icon->w * scale) / 2),
-                           (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
+            GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2),
+                           (rmode->xfbHeight / static_cast<float>(2)) - ((icon->h * scale) / 2), icon, 0, scale, scale,
                            util::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 0) {
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
         }
         case ProgramState::Menu: {
             const f32 scale = 0.5f;
-            const u32 xpos  = (rmode->fbWidth / 2) - ((icon->w * scale) / 2);
+            const u32 xpos  = (rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2);
             GRRLIB_DrawImg(xpos, 64, icon, 0, scale, scale, util::white);
 
             for (MenuItem& item : mainMenu.getItems()) {
