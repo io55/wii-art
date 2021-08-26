@@ -3,7 +3,7 @@
 
 #include <grrlib.h>
 
-namespace cl {
+namespace util {
 // Wrapper for RGBA macro
 static inline constexpr u32 GetColour(u8 r, u8 g, u8 b, u8 a = 0xFF) { return RGBA(r, g, b, a); }
 

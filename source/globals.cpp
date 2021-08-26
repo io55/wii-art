@@ -2,7 +2,7 @@
 
 Camera* gMainCamera = nullptr;
 
-Font gFont;
+util::Font gFont;
 
 float gTimer = 0;
 bool gExit = false;

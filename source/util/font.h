@@ -3,6 +3,7 @@
 
 #include <grrlib.h>
 
+namespace util {
 class Font {
 public:
     Font() = default;
@@ -33,5 +34,6 @@ public:
 private:
     GRRLIB_ttfFont* m_font = nullptr;
 };
+}
 
 #endif

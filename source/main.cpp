@@ -14,6 +14,7 @@
 #include "menu.h"
 #include "settings.h"
 #include "util/colour.h"
+#include "util/random.h"
 
 enum class ObjectType : u8 {
     Cube,
@@ -21,42 +22,30 @@ enum class ObjectType : u8 {
     Sphere
 };
 
-// X is min, Y is max
-static inline u32 getRandom(Vector2<u32> extents)
-{
-    return (rand() % (extents.m_y - extents.m_x + 1)) + extents.m_x;
-}
-
-// X is min, Y is max
-static inline f32 getRandom(Vector2<f32> extents)
-{
-    return extents.m_x + (rand() / (float)RAND_MAX) * (extents.m_y - extents.m_x);
-}
-
 struct Object {
     guVector m_position;
     f32 m_size;
-    u32 m_colour = cl::white;
+    u32 m_colour = util::white;
 
     ObjectType m_type;
 
     void randomisePosition()
     {
-        m_position.x = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
-        m_position.y = getRandom(Vector2<f32>({ 0.5f, 5.0f }));
-        m_position.z = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
+        m_position.x = util::getRandom<f32>(-7.5f, 7.5f);
+        m_position.y = util::getRandom<f32>(0.5f, 5.0f);
+        m_position.z = util::getRandom<f32>(-7.5f, 7.5f);
     }
 
     void randomiseScaling()
     {
-        m_size = getRandom(Vector2<f32>({ 0.5f, 1.5f }));
+        m_size = util::getRandom<f32>(0.5f, 1.5f);
     }
 
     void randomiseColour()
     {
-        Vector2<u32> rng = { 0x00, 0xFF };
-        Vector2<u32> rngAlpha = { 0x33, 0xAA };
-        m_colour = cl::GetColour(getRandom(rng), getRandom(rng), getRandom(rng), getRandom(rngAlpha));
+        m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF),
+            util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF),
+            util::getRandom<u32>(0x33, 0xFF));
     }
 
     void render()
@@ -93,8 +82,7 @@ struct RandomGenerator {
         m_objects.clear();
         for (u32 i = 0; i < gSettings.m_sceneObjCount.m_x; i++) {
             while (true) {
-                Vector2<u32> rngGen = { 0, 6 };
-                u32 rng = getRandom(rngGen);
+                u32 rng = util::getRandom<u32>(0, 6);
                 if (rng < 2) {
                     if (gSettings.m_spawnMode & ObjectSpawnMode::Cube) {
                         Object obj;
@@ -137,15 +125,14 @@ struct RandomGenerator {
         m_lights.clear();
         for (u32 i = 0; i < gSettings.m_lightCount.m_x; i++) {
             Light light;
-            Vector2<u32> rng = { 0x00, 0xFF };
-            Vector2<f32> rngF = { 1, 10 };
-            light.m_brightness = getRandom(rngF);
-            light.m_distattn = getRandom(rngF);
-            light.m_colour = cl::GetColour(getRandom(rng), getRandom(rng), getRandom(rng));
+            light.m_brightness = util::getRandom<u32>(1, 10);
+            light.m_distattn = util::getRandom<u32>(1, 10);
+            light.m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF),
+                util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF));
             light.m_index = i;
-            light.m_position.x = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
-            light.m_position.y = getRandom(Vector2<f32>({ 2.5f, 10.0f }));
-            light.m_position.z = getRandom(Vector2<f32>({ -7.5f, 7.5f }));
+            light.m_position.x = util::getRandom<f32>(-7.5f, 7.5f);
+            light.m_position.y = util::getRandom<f32>(2.5f, 10.0f);
+            light.m_position.z = util::getRandom<f32>(-7.5f, 7.5f);
             m_lights.push_back(light);
         }
     }
@@ -214,25 +201,25 @@ int main(int argc, char** argv)
 
     Menu mainMenu;
     std::vector<MenuItem>& mainMenuItems = mainMenu.getItems();
-    mainMenuItems.push_back({ 0, { 64, 241 }, "START", 46, cl::white, cl::red });
-    mainMenuItems.push_back({ 1, { 64, 301 }, "SETTINGS", 46, cl::white, cl::red });
-    mainMenuItems.push_back({ 2, { 64, 361 }, "EXIT", 46, cl::white, cl::red });
+    mainMenuItems.push_back({ 0, { 64, 241 }, "START", 46, util::white, util::red });
+    mainMenuItems.push_back({ 1, { 64, 301 }, "SETTINGS", 46, util::white, util::red });
+    mainMenuItems.push_back({ 2, { 64, 361 }, "EXIT", 46, util::white, util::red });
     mainMenu.reset(0);
 
     Menu gameMenu;
     std::vector<MenuItem>& gameMenuItems = gameMenu.getItems();
-    gameMenuItems.push_back({ 0, { 32, 32 }, "RANDOMISE SCENE", 26, cl::white, cl::red });
-    gameMenuItems.push_back({ 1, { 32, 32 + 24 }, "RANDOMISE SIZE", 26, cl::white, cl::red });
-    gameMenuItems.push_back({ 2, { 32, 32 + 24 + 24 }, "RANDOMISE COLOURS", 26, cl::white, cl::red });
-    gameMenuItems.push_back({ 3, { 32, 32 + 24 + 24 + 24 }, "RANDOMISE LIGHTS", 26, cl::white, cl::red });
-    gameMenuItems.push_back({ 4, { 32, 32 + 24 + 24 + 24 + 24 }, "PRESS 1 TO HIDE", 26, cl::yellow, cl::yellow, false });
+    gameMenuItems.push_back({ 0, { 32, 32 }, "RANDOMISE SCENE", 26, util::white, util::red });
+    gameMenuItems.push_back({ 1, { 32, 32 + 24 }, "RANDOMISE SIZE", 26, util::white, util::red });
+    gameMenuItems.push_back({ 2, { 32, 32 + 24 + 24 }, "RANDOMISE COLOURS", 26, util::white, util::red });
+    gameMenuItems.push_back({ 3, { 32, 32 + 24 + 24 + 24 }, "RANDOMISE LIGHTS", 26, util::white, util::red });
+    gameMenuItems.push_back({ 4, { 32, 32 + 24 + 24 + 24 + 24 }, "PRESS 1 TO HIDE", 26, util::yellow, util::yellow, false });
     gameMenu.reset(0);
 
     Menu settingsMenu;
     std::vector<MenuItem>& settingsMenuItems = settingsMenu.getItems();
-    settingsMenuItems.push_back({ 0, { 64, 64 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
-    settingsMenuItems.push_back({ 1, { 64, 64 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
-    settingsMenuItems.push_back({ 2, { 64, 64 + 48 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
+    settingsMenuItems.push_back({ 0, { 64, 64 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
+    settingsMenuItems.push_back({ 1, { 64, 64 + 48 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
+    settingsMenuItems.push_back({ 2, { 64, 64 + 48 + 48 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
     settingsMenu.reset(0);
 
     RandomGenerator sceneGenerator;
@@ -277,7 +264,7 @@ int main(int argc, char** argv)
                     }
 
                     GRRLIB_DrawImg(xPos, yPos, icon,
-                        0, scale, scale, cl::GetColour(0x55, 0x55, 0x55, 0x64));
+                        0, scale, scale, util::GetColour(0x55, 0x55, 0x55, 0x64));
                 }
             }
             scrollTimer += 0.07571f;
@@ -289,7 +276,7 @@ int main(int argc, char** argv)
             f32 scale = 1;
             GRRLIB_DrawImg((rmode->fbWidth / 2) - ((icon->w * scale) / 2),
                 (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
-                cl::GetColour(0xFF, 0xFF, 0xFF, alpha));
+                util::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 255) {
                 static u32 logoTimer = 0;
@@ -309,7 +296,7 @@ int main(int argc, char** argv)
             f32 scale = 1;
             GRRLIB_DrawImg((rmode->fbWidth / 2) - ((icon->w * scale) / 2),
                 (rmode->xfbHeight / 2) - ((icon->h * scale) / 2), icon, 0, scale, scale,
-                cl::GetColour(0xFF, 0xFF, 0xFF, alpha));
+                util::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 0) {
                 gSettings.m_state = ProgramState::Menu;
@@ -321,7 +308,7 @@ int main(int argc, char** argv)
         case ProgramState::Menu: {
             const f32 scale = 0.5f;
             const u32 xpos = (rmode->fbWidth / 2) - ((icon->w * scale) / 2);
-            GRRLIB_DrawImg(xpos, 64, icon, 0, scale, scale, cl::white);
+            GRRLIB_DrawImg(xpos, 64, icon, 0, scale, scale, util::white);
 
             for (MenuItem& item : mainMenuItems) {
                 item.m_position.m_x = xpos;
@@ -450,12 +437,12 @@ int main(int argc, char** argv)
 
             // Plane
             GRRLIB_ObjectView(0, -1, 0, 0, 0, 0, 50, 0.1f, 50);
-            GRRLIB_DrawCube(1, true, cl::white);
+            GRRLIB_DrawCube(1, true, util::white);
 
             GRRLIB_2dMode();
 
             if (gSettings.m_showUI) {
-                GRRLIB_Rectangle(32, 36, 226, 96 + 24, cl::GetColour(0x44, 0x44, 0x44), true);
+                GRRLIB_Rectangle(32, 36, 226, 96 + 24, util::GetColour(0x44, 0x44, 0x44), true);
                 for (MenuItem& item : gameMenuItems) {
                     item.render(gFont);
                 }

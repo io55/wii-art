@@ -15,8 +15,8 @@ struct MenuItem {
     const char* m_text;
     u32 m_textSize = 12; // aka fontSize
 
-    u32 m_defaultCol = cl::white;
-    u32 m_selectedCol = cl::red;
+    u32 m_defaultCol = util::white;
+    u32 m_selectedCol = util::red;
 
     bool m_selected = false;
     bool m_selectable = true;
@@ -32,7 +32,7 @@ struct MenuItem {
     {
     }
 
-    inline void render(Font& font)
+    inline void render(util::Font& font)
     {
         font.printf(m_position.m_x, m_position.m_y, m_text, m_textSize, m_selected ? m_selectedCol : m_defaultCol);
     }

@@ -7,7 +7,7 @@
 extern Camera* gMainCamera;
 
 // To get top left corner, X - 2 and Y - 18
-extern Font gFont;
+extern util::Font gFont;
 
 extern float gTimer;
 extern bool gExit;
