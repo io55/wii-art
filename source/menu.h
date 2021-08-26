@@ -21,7 +21,7 @@ struct MenuItem {
     bool m_selected = false;
     bool m_selectable = true;
 
-    inline MenuItem(u32 idx, Vector2<u32> pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol, bool selectable = true)
+    inline MenuItem(Vector2<u32> pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol, bool selectable = true, u32 idx = 0)
         : m_index(idx)
         , m_position(pos)
         , m_text(text)
@@ -56,6 +56,12 @@ public:
 
     const MenuItem& getSelected() const { return m_items[m_curIdx]; }
     MenuItem& getSelected() { return m_items[m_curIdx]; }
+
+    void addMenuItem(MenuItem item)
+    {
+        item.m_index = m_items.size();
+        m_items.push_back(item);
+    }
 
     void moveSelected(MenuDirection);
     void reset(s32 idxResetTo);

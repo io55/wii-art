@@ -138,26 +138,23 @@ int main(int argc, char** argv)
     float fadeTimer = 0;
 
     Menu mainMenu;
-    std::vector<MenuItem>& mainMenuItems = mainMenu.getItems();
-    mainMenuItems.push_back({ 0, { 64, 241 }, "START", 46, util::white, util::red });
-    mainMenuItems.push_back({ 1, { 64, 301 }, "SETTINGS", 46, util::white, util::red });
-    mainMenuItems.push_back({ 2, { 64, 361 }, "EXIT", 46, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, 241 }, "START", 46, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, 301 }, "SETTINGS", 46, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, 361 }, "EXIT", 46, util::white, util::red });
     mainMenu.reset(0);
 
     Menu gameMenu;
-    std::vector<MenuItem>& gameMenuItems = gameMenu.getItems();
-    gameMenuItems.push_back({ 0, { 32, 32 }, "RANDOMISE SCENE", 26, util::white, util::red });
-    gameMenuItems.push_back({ 1, { 32, 32 + 24 }, "RANDOMISE SIZE", 26, util::white, util::red });
-    gameMenuItems.push_back({ 2, { 32, 32 + 24 + 24 }, "RANDOMISE COLOURS", 26, util::white, util::red });
-    gameMenuItems.push_back({ 3, { 32, 32 + 24 + 24 + 24 }, "RANDOMISE LIGHTS", 26, util::white, util::red });
-    gameMenuItems.push_back({ 4, { 32, 32 + 24 + 24 + 24 + 24 }, "PRESS 1 TO HIDE", 26, util::yellow, util::yellow, false });
+    gameMenu.addMenuItem({ { 32, 32 }, "RANDOMISE SCENE", 26, util::white, util::red });
+    gameMenu.addMenuItem({ { 32, 56 }, "RANDOMISE SIZE", 26, util::white, util::red });
+    gameMenu.addMenuItem({ { 32, 80 }, "RANDOMISE COLOURS", 26, util::white, util::red });
+    gameMenu.addMenuItem({ { 32, 104 }, "RANDOMISE LIGHTS", 26, util::white, util::red });
+    gameMenu.addMenuItem({ { 32, 128 }, "PRESS 1 TO HIDE", 26, util::yellow, util::yellow, false });
     gameMenu.reset(0);
 
     Menu settingsMenu;
-    std::vector<MenuItem>& settingsMenuItems = settingsMenu.getItems();
-    settingsMenuItems.push_back({ 0, { 64, 64 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
-    settingsMenuItems.push_back({ 1, { 64, 64 + 48 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
-    settingsMenuItems.push_back({ 2, { 64, 64 + 48 + 48 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
+    settingsMenu.addMenuItem({ { 64, 64 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
+    settingsMenu.addMenuItem({ { 64, 112 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
+    settingsMenu.addMenuItem({ { 64, 160 }, "REPLACE_WITH_CODE", 46, util::white, util::red });
     settingsMenu.reset(0);
 
     /* Main menu flow acts as such:
@@ -258,7 +255,7 @@ int main(int argc, char** argv)
             const u32 xpos = (rmode->fbWidth / 2) - ((icon->w * scale) / 2);
             GRRLIB_DrawImg(xpos, 64, icon, 0, scale, scale, util::white);
 
-            for (MenuItem& item : mainMenuItems) {
+            for (MenuItem& item : mainMenu.getItems()) {
                 item.m_position.m_x = xpos;
                 item.render(gFont);
             }
@@ -290,7 +287,7 @@ int main(int argc, char** argv)
             break;
         }
         case ProgramState::Options: {
-            for (MenuItem& item : settingsMenuItems) {
+            for (MenuItem& item : settingsMenu.getItems()) {
                 if (item.m_index == 0) {
                     char text[0x20];
                     sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x, gSettings.m_sceneObjCount.m_y);
@@ -390,8 +387,8 @@ int main(int argc, char** argv)
             GRRLIB_2dMode();
 
             if (gSettings.m_showUI) {
-                GRRLIB_Rectangle(32, 36, 226, 96 + 24, util::GetColour(0x44, 0x44, 0x44), true);
-                for (MenuItem& item : gameMenuItems) {
+                GRRLIB_Rectangle(32, 36, 226, 120, util::GetColour(0x44, 0x44, 0x44), true);
+                for (MenuItem& item : gameMenu.getItems()) {
                     item.render(gFont);
                 }
 
