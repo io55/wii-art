@@ -27,8 +27,8 @@ static inline u8 operator&(ObjectSpawnMode a, ObjectSpawnMode b)
 
 struct Settings {
     // Vector2 instances are used like: [CURRENT VALUE, MAX VALUE]
-    Vector2<u32> m_sceneObjCount = { 15, 30 };
-    Vector2<u32> m_lightCount = { 1, 5 };
+    Vector2<u32> m_sceneObjCount = { 25, 50 };
+    Vector2<u32> m_lightCount = { 1, 3 };
 
     ObjectSpawnMode m_spawnMode = ObjectSpawnMode::All;
     bool m_showUI = true;
