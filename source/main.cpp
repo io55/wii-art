@@ -11,74 +11,13 @@
 
 #include "game/light.cpp"
 #include "game/object.h"
+#include "game/scenegenerator.h"
 #include "globals.h"
 #include "math/camera.cpp"
 #include "menu.h"
 #include "settings.h"
 #include "util/colour.h"
 #include "util/random.h"
-
-struct RandomGenerator {
-    std::vector<Object> m_objects;
-    std::vector<Light> m_lights;
-
-    void setup()
-    {
-        m_objects.clear();
-        for (u32 i = 0; i < gSettings.m_sceneObjCount.m_x; i++) {
-            while (true) {
-                u32 rng = util::getRandom<u32>(0, 6);
-                if (rng < 2) {
-                    if (gSettings.m_spawnMode & ObjectSpawnMode::Cube) {
-                        Object obj;
-                        obj.m_type = ObjectType::Cube;
-                        obj.randomise();
-                        m_objects.push_back(obj);
-                        break;
-                    }
-                } else if (rng >= 2 && rng < 4) {
-                    if (gSettings.m_spawnMode & ObjectSpawnMode::Torus) {
-                        Object obj;
-                        obj.m_type = ObjectType::Torus;
-                        obj.randomise();
-                        m_objects.push_back(obj);
-                        break;
-                    }
-                } else if (rng >= 4) {
-                    if (gSettings.m_spawnMode & ObjectSpawnMode::Sphere) {
-                        Object obj;
-                        obj.m_type = ObjectType::Sphere;
-                        obj.randomise();
-                        m_objects.push_back(obj);
-                        break;
-                    }
-                }
-            }
-        }
-
-        randomiseLights();
-    }
-
-    void randomiseLights()
-    {
-        m_lights.clear();
-        for (u32 i = 0; i < gSettings.m_lightCount.m_x; i++) {
-            Light light(i);
-            light.randomise();
-            m_lights.push_back(light);
-        }
-    }
-
-    void render()
-    {
-        for (auto& light : m_lights) {
-            GRRLIB_SetLightDiff(light.m_index, light.m_position, 10, 5, light.m_colour);
-        }
-        for (auto& obj : m_objects) {
-            obj.render();
-        }
-    }
-};
 
 static void IncrementSpawnMode(const bool fwd)
 {
@@ -160,8 +99,6 @@ int main(int argc, char** argv)
      * Main menu renders & updates
      * Program state = ProgramState::MainMenu
      */
-
-    RandomGenerator sceneGenerator;
 
     GRRLIB_SetBackgroundColour(0x00, 0x00, 0x00, 0xFF);
     while (!gExit) {
@@ -266,7 +203,7 @@ int main(int argc, char** argv)
                 // Start
                 if (selected.m_index == 0) {
                     gSettings.m_state = ProgramState::MainGame;
-                    sceneGenerator.setup();
+                    gSceneGenerator.setup();
                 }
                 // Options
                 else if (selected.m_index == 1) {
@@ -372,7 +309,7 @@ int main(int argc, char** argv)
             look.x = look.y = look.z = 0;
             gMainCamera->applyCamera();
 
-            sceneGenerator.render();
+            gSceneGenerator.render();
 
             // Plane
             GRRLIB_ObjectView(0, -1, 0, 0, 0, 0, 50, 0.1f, 50);
@@ -395,28 +332,28 @@ int main(int argc, char** argv)
 
                     // SCENE
                     if (item.m_index == 0) {
-                        sceneGenerator.setup();
+                        gSceneGenerator.setup();
                     }
                     // SIZE
                     if (item.m_index == 1) {
-                        for (auto& obj : sceneGenerator.m_objects) {
+                        for (auto& obj : gSceneGenerator.m_objects) {
                             obj.rngScaling();
                         }
                     }
                     // COLOURS
                     if (item.m_index == 2) {
-                        for (auto& obj : sceneGenerator.m_objects) {
+                        for (auto& obj : gSceneGenerator.m_objects) {
                             obj.rngColour();
                         }
                     }
                     // LIGHTS
                     if (item.m_index == 3) {
-                        sceneGenerator.randomiseLights();
+                        gSceneGenerator.randomiseLights();
                     }
                 }
             } else {
                 if (btns_down & WPAD_BUTTON_2) {
-                    sceneGenerator.setup();
+                    gSceneGenerator.setup();
                 }
             }
 
