@@ -12,34 +12,8 @@
 #include "globals.h"
 #include "math/camera.cpp"
 #include "menu.h"
+#include "settings.h"
 #include "util/colour.h"
-
-enum class ProgramState : u8 {
-    FadeInText,
-    FadeOutText,
-
-    Menu,
-    Options,
-
-    MainGame
-};
-
-enum class ObjectSpawnMode : u8 {
-    Cube = 1 << 0,
-    Torus = 1 << 1,
-    Sphere = 1 << 2,
-
-    All = Cube | Torus | Sphere,
-};
-
-struct Settings {
-    // VECTOR 2 INSTANCES WORK AS: [CURRENT VALUE, MAX VALUE]
-    Vector2<u32> m_sceneObjCount = { 15, 30 };
-    Vector2<u32> m_lightCount = { 1, 5 };
-
-    ObjectSpawnMode m_spawnMode = ObjectSpawnMode::All;
-    bool m_showUI = true;
-} gSettings;
 
 enum class ObjectType : u8 {
     Cube,
@@ -122,7 +96,7 @@ struct RandomGenerator {
                 Vector2<u32> rngGen = { 0, 6 };
                 u32 rng = getRandom(rngGen);
                 if (rng < 2) {
-                    if ((u8)gSettings.m_spawnMode & (u8)ObjectSpawnMode::Cube) {
+                    if (gSettings.m_spawnMode & ObjectSpawnMode::Cube) {
                         Object obj;
                         obj.m_type = ObjectType::Cube;
                         obj.randomiseColour();
@@ -132,7 +106,7 @@ struct RandomGenerator {
                         break;
                     }
                 } else if (rng >= 2 && rng < 4) {
-                    if ((u8)gSettings.m_spawnMode & (u8)ObjectSpawnMode::Torus) {
+                    if (gSettings.m_spawnMode & ObjectSpawnMode::Torus) {
                         Object obj;
                         obj.m_type = ObjectType::Torus;
                         obj.randomiseColour();
@@ -142,7 +116,7 @@ struct RandomGenerator {
                         break;
                     }
                 } else if (rng >= 4) {
-                    if ((u8)gSettings.m_spawnMode & (u8)ObjectSpawnMode::Sphere) {
+                    if (gSettings.m_spawnMode & ObjectSpawnMode::Sphere) {
                         Object obj;
                         obj.m_type = ObjectType::Sphere;
                         obj.randomiseColour();
@@ -236,7 +210,6 @@ int main(int argc, char** argv)
     gFont.init(terminus_ttf, terminus_ttf_size);
     GRRLIB_texImg* icon = GRRLIB_LoadTextureJPG(icon_jpg);
 
-    ProgramState state = ProgramState::FadeInText;
     float fadeTimer = 0;
 
     Menu mainMenu;
@@ -269,12 +242,15 @@ int main(int argc, char** argv)
         WPAD_ScanPads();
 
         u32 btns_down = WPAD_ButtonsDown(WPAD_CHAN_0);
-        u32 btns_held = WPAD_ButtonsHeld(WPAD_CHAN_0);
-        // u32 btns_up = WPAD_ButtonsUp(WPAD_CHAN_0);
 
         GRRLIB_2dMode();
 
-        if (state != ProgramState::MainGame) {
+        if (gSettings.m_state != ProgramState::MainGame) {
+            /* Work out the "step" size for each image to allow for a tiled
+             * background, using the scaling of the image as well and an extra
+             * pane offset by 1 for the gap left by only generating tiles on
+             * the screen but moving them in a direction
+             */
             f32 scale = 0.25f;
             u32 amtX = std::ceil(rmode->fbWidth / (icon->w * scale)) + 1;
             u32 amtY = std::ceil(rmode->xfbHeight / (icon->h * scale)) + 1;
@@ -284,6 +260,11 @@ int main(int argc, char** argv)
                 for (u32 y = 0; y < amtY; y++) {
                     // stepX should evaluate to 160
                     f32 stepX = rmode->fbWidth / (amtX - 1);
+
+                    // ((0 * 160) + {scrolling_offset}) - 160 = -160.? (fills the gap left by moving tiles)
+                    // ((1 * 160) + {scrolling_offset}) - 160 = 0.?
+                    // ((2 * 160) + {scrolling_offset}) - 160 = 160.?
+                    // etc.
                     f32 xPos = ((x * stepX) + scrollTimer) - stepX;
                     while (xPos > rmode->fbWidth) {
                         xPos -= rmode->fbWidth + stepX;
@@ -299,10 +280,10 @@ int main(int argc, char** argv)
                         0, scale, scale, cl::GetColour(0x55, 0x55, 0x55, 0x64));
                 }
             }
-            scrollTimer += 0.075671f;
+            scrollTimer += 0.07571f;
         }
 
-        switch (state) {
+        switch (gSettings.m_state) {
         case ProgramState::FadeInText: {
             u8 alpha = std::min(255.0f, fadeTimer);
             f32 scale = 1;
@@ -311,12 +292,12 @@ int main(int argc, char** argv)
                 cl::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 255) {
-                static u32 timer = 0;
-                if (timer > 64) {
+                static u32 logoTimer = 0;
+                if (logoTimer > 64) {
                     fadeTimer = 255;
-                    state = ProgramState::FadeOutText;
+                    gSettings.m_state = ProgramState::FadeOutText;
                 }
-                timer += 1;
+                logoTimer += 1;
                 break;
             }
 
@@ -331,7 +312,7 @@ int main(int argc, char** argv)
                 cl::GetColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 0) {
-                state = ProgramState::Menu;
+                gSettings.m_state = ProgramState::Menu;
             }
 
             fadeTimer -= 2.5f;
@@ -358,12 +339,12 @@ int main(int argc, char** argv)
 
                 // Start
                 if (selected.m_index == 0) {
-                    state = ProgramState::MainGame;
+                    gSettings.m_state = ProgramState::MainGame;
                     sceneGenerator.setup();
                 }
                 // Options
                 else if (selected.m_index == 1) {
-                    state = ProgramState::Options;
+                    gSettings.m_state = ProgramState::Options;
                 }
                 // Exit
                 else if (selected.m_index == 2) {
@@ -415,7 +396,7 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_B) {
-                state = ProgramState::Menu;
+                gSettings.m_state = ProgramState::Menu;
             }
 
             if (btns_down & WPAD_BUTTON_RIGHT) {
@@ -518,7 +499,7 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_B) {
-                state = ProgramState::Menu;
+                gSettings.m_state = ProgramState::Menu;
                 mainMenu.reset(0);
             }
             break;
