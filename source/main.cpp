@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "icon_jpg.h"
 #include "terminus_ttf.h"
@@ -37,6 +38,119 @@ struct Settings {
 
     ObjectSpawnMode m_spawnMode = ObjectSpawnMode::All;
 } gSettings;
+
+enum class ObjectType : u8 {
+    Cube,
+    Torus,
+    Sphere
+};
+
+// X is min, Y is max
+static inline u32 getRandom(Vector2<u32> extents)
+{
+    return (rand() % (extents.m_y - extents.m_x + 1)) + extents.m_x;
+}
+
+// X is min, Y is max
+static inline f32 getRandom(Vector2<f32> extents)
+{
+    return extents.m_x + (rand() / (float)RAND_MAX) * (extents.m_y - extents.m_x);
+}
+
+struct Object {
+    guVector m_position;
+    f32 m_size;
+    u32 m_colour = cl::white;
+
+    ObjectType m_type;
+
+    void randomisePosition()
+    {
+        m_position.x = getRandom(Vector2<f32>({ -5.0f, 5.0f }));
+        m_position.y = getRandom(Vector2<f32>({ 1.0f, 5.0f }));
+        m_position.z = getRandom(Vector2<f32>({ -5.0f, 5.0f }));
+    }
+
+    void randomiseScaling()
+    {
+        m_size = getRandom(Vector2<f32>({ 0.5f, 2.0f }));
+    }
+
+    void randomiseColour()
+    {
+        Vector2<u32> rng = { 0x000000FF, 0xFFFFFFFF };
+        m_colour = getRandom(rng);
+    }
+
+    void render()
+    {
+        GRRLIB_ObjectView(m_position.x, m_position.y, m_position.z, 0, 0, 0, m_size, m_size, m_size);
+        switch (m_type) {
+        case ObjectType::Cube:
+            GRRLIB_DrawCube(m_size, true, m_colour);
+            break;
+        case ObjectType::Torus:
+            GRRLIB_DrawTorus(m_size / 2, m_size, 10, 10, true, m_colour);
+            break;
+        case ObjectType::Sphere:
+            GRRLIB_DrawSphere(m_size, 10, 10, true, m_colour);
+            break;
+        }
+    }
+};
+
+struct RandomGenerator {
+    std::vector<Object> m_objects;
+
+    void setup()
+    {
+        m_objects.clear();
+        for (u32 i = 0; i < gSettings.m_sceneObjCount.m_x; i++) {
+            while (true) {
+                Vector2<u32> rngGen = { 0, 6 };
+                u32 rng = getRandom(rngGen);
+                if (rng < 2) {
+                    if ((u8)gSettings.m_spawnMode & (u8)ObjectSpawnMode::Cube) {
+                        Object obj;
+                        obj.m_type = ObjectType::Cube;
+                        obj.randomiseColour();
+                        obj.randomisePosition();
+                        obj.randomiseScaling();
+                        m_objects.push_back(obj);
+                        break;
+                    }
+                } else if (rng >= 2 && rng < 4) {
+                    if ((u8)gSettings.m_spawnMode & (u8)ObjectSpawnMode::Torus) {
+                        Object obj;
+                        obj.m_type = ObjectType::Torus;
+                        obj.randomiseColour();
+                        obj.randomisePosition();
+                        obj.randomiseScaling();
+                        m_objects.push_back(obj);
+                        break;
+                    }
+                } else if (rng >= 4) {
+                    if ((u8)gSettings.m_spawnMode & (u8)ObjectSpawnMode::Sphere) {
+                        Object obj;
+                        obj.m_type = ObjectType::Sphere;
+                        obj.randomiseColour();
+                        obj.randomisePosition();
+                        obj.randomiseScaling();
+                        m_objects.push_back(obj);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    void render()
+    {
+        for (auto& obj : m_objects) {
+            obj.render();
+        }
+    }
+};
 
 static void IncrementSpawnMode(const bool fwd)
 {
@@ -99,10 +213,10 @@ int main(int argc, char** argv)
 
     Menu gameMenu;
     std::vector<MenuItem>& gameMenuItems = gameMenu.getItems();
-    gameMenuItems.push_back({ 0, { 64, 64 }, "RANDOMISE SCENE", 26, cl::white, cl::red });
-    gameMenuItems.push_back({ 1, { 64, 64 + 24 }, "RANDOMISE SIZE", 26, cl::white, cl::red });
-    gameMenuItems.push_back({ 2, { 64, 64 + 24 + 24 }, "RANDOMISE COLOURS", 26, cl::white, cl::red });
-    gameMenuItems.push_back({ 3, { 64, 64 + 24 + 24 + 24 }, "RANDOMISE LIGHTS", 26, cl::white, cl::red });
+    gameMenuItems.push_back({ 0, { 32, 32 }, "RANDOMISE SCENE", 26, cl::white, cl::red });
+    gameMenuItems.push_back({ 1, { 32, 32 + 24 }, "RANDOMISE SIZE", 26, cl::white, cl::red });
+    gameMenuItems.push_back({ 2, { 32, 32 + 24 + 24 }, "RANDOMISE COLOURS", 26, cl::white, cl::red });
+    gameMenuItems.push_back({ 3, { 32, 32 + 24 + 24 + 24 }, "RANDOMISE LIGHTS", 26, cl::white, cl::red });
     gameMenu.reset(0);
 
     Menu optionsMenu;
@@ -111,13 +225,15 @@ int main(int argc, char** argv)
     optionsMenuItems.push_back({ 1, { 64, 64 + 48 }, "REPLACE_WITH_CODE", 46, cl::white, cl::red });
     optionsMenu.reset(0);
 
+    RandomGenerator sceneGenerator;
+
     GRRLIB_SetBackgroundColour(0x00, 0x00, 0x00, 0xFF);
     while (!gExit) {
         WPAD_ScanPads();
 
         u32 btns_down = WPAD_ButtonsDown(WPAD_CHAN_0);
-        u32 btns_up = WPAD_ButtonsUp(WPAD_CHAN_0);
-        u32 btns_held = WPAD_ButtonsHeld(WPAD_CHAN_0);
+        // u32 btns_up = WPAD_ButtonsUp(WPAD_CHAN_0);
+        // u32 btns_held = WPAD_ButtonsHeld(WPAD_CHAN_0);
 
         GRRLIB_2dMode();
 
@@ -206,6 +322,7 @@ int main(int argc, char** argv)
                 // Start
                 if (selected.m_index == 0) {
                     state = ProgramState::MainGame;
+                    sceneGenerator.setup();
                 }
                 // Options
                 else if (selected.m_index == 1) {
@@ -222,7 +339,7 @@ int main(int argc, char** argv)
         case ProgramState::Options: {
             for (MenuItem& item : optionsMenuItems) {
                 if (item.m_index == 0) {
-                    char text[0x30];
+                    char text[0x20];
                     sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x, gSettings.m_sceneObjCount.m_y);
                     item.m_text = text;
                 } else if (item.m_index == 1) {
@@ -242,7 +359,7 @@ int main(int argc, char** argv)
                         break;
                     }
 
-                    char text[0x30];
+                    char text[0x20];
                     sprintf(text, "Spawn type: [%s]", type);
                     item.m_text = text;
                 }
@@ -288,12 +405,23 @@ int main(int argc, char** argv)
         }
 
         case ProgramState::MainGame: {
+            guVector& position = gMainCamera->position();
+            position.z = -10;
+            position.y = 10;
+
+            guVector& look = gMainCamera->lookAt();
+            look.x = look.y = look.z = 0;
             gMainCamera->applyCamera();
-            GRRLIB_ObjectView(0, 0, -5, 0, 0, 0, 1, 1, 1);
+
+            // Plane
+            GRRLIB_ObjectView(0, -1, 0, 0, 0, 0, 10, 0.1f, 10);
             GRRLIB_DrawCube(1, true, cl::white);
+
+            sceneGenerator.render();
 
             GRRLIB_2dMode();
 
+            GRRLIB_Rectangle(32, 36, 226, 96, cl::GetColour(0x44, 0x44, 0x44), true);
             for (MenuItem& item : gameMenuItems) {
                 item.render(gFont);
             }
@@ -312,6 +440,7 @@ int main(int argc, char** argv)
 
                 // SCENE
                 if (item.m_index == 0) {
+                    sceneGenerator.setup();
                 }
                 // SIZE
                 if (item.m_index == 1) {
