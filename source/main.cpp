@@ -285,10 +285,16 @@ int main(int argc, char** argv)
                         for (auto& obj : gSceneGenerator.m_objects) {
                             obj.rngScaling();
                         }
+                        for (auto& obj : gSceneGenerator.m_wfObjects) {
+                            obj.rngScaling();
+                        }
                     }
                     // COLOURS
                     if (item.m_index == 2) {
                         for (auto& obj : gSceneGenerator.m_objects) {
+                            obj.rngColour();
+                        }
+                        for (auto& obj : gSceneGenerator.m_wfObjects) {
                             obj.rngColour();
                         }
                     }
