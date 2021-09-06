@@ -32,12 +32,18 @@ int main(int argc, char** argv)
 
     Menu mainMenu;
     const u32 mm_yStride = 80 + (icon->h * 0.5f);
-    mainMenu.addMenuItem({ { 64, mm_yStride }, "START", 36, util::white, util::red });
-    mainMenu.addMenuItem({ { 64, mm_yStride + 48 }, "SETTINGS", 36, util::white, util::red });
-    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 2 }, "CONTROLS", 36, util::white, util::red });
-    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 3 }, "WHAT'S NEW?", 36, util::white, util::red });
-    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 4 }, "EXIT", 36, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride }, "START", 46, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride + 48 }, "SETTINGS", 46, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 2 }, "EXTRAS", 46, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 3 }, "EXIT", 46, util::white, util::red });
     mainMenu.reset(0);
+
+    Menu extraMenu;
+    extraMenu.addMenuItem({ { 64, 64 }, "WHAT'S NEW?", 46, util::white, util::red });
+    extraMenu.addMenuItem({ { 64, 112 }, "CONTROLS", 46, util::white, util::red });
+    extraMenu.addMenuItem({ { 64, 160 }, "GX_S55_S1", 46, util::white, util::red });
+    extraMenu.addMenuItem({ { 64, 208 }, "GX_S55_S2", 46, util::white, util::red });
+    extraMenu.reset(0);
 
     Menu gameMenu;
     gameMenu.addMenuItem({ { 32, 32 }, "RANDOMISE SCENE", 26, util::white, util::red });
@@ -73,7 +79,8 @@ int main(int argc, char** argv)
 
         GRRLIB_2dMode();
 
-        if (gSettings.m_state != ProgramState::MainGame) {
+        if (gSettings.m_state != ProgramState::MainGame && gSettings.m_state != ProgramState::GX_S55_S1
+            && gSettings.m_state != ProgramState::GX_S55_S2) {
             /* Work out the "step" size for each image to allow for a tiled
              * background, using the scaling of the image as well and an extra
              * pane offset by 1 for the gap left by only generating tiles on
@@ -176,12 +183,9 @@ int main(int argc, char** argv)
                     gSettings.m_state = ProgramState::Options;
                     break;
                 case 2:
-                    gSettings.m_state = ProgramState::Controls;
+                    gSettings.m_state = ProgramState::Extras;
                     break;
                 case 3:
-                    gSettings.m_state = ProgramState::ChangeLog;
-                    break;
-                case 4:
                     gExit = true;
                     break;
                 default:
@@ -266,9 +270,47 @@ int main(int argc, char** argv)
             }
             break;
         }
-        case ProgramState::Controls: {
+
+        case ProgramState::Extras: {
+            for (MenuItem& item : extraMenu.getItems()) {
+                item.render(gFont);
+            }
+
+            if (btns_down & WPAD_BUTTON_UP) {
+                extraMenu.moveSelected(MenuDirection::Up);
+            } else if (btns_down & WPAD_BUTTON_DOWN) {
+                extraMenu.moveSelected(MenuDirection::Down);
+            }
+
+            if (btns_down & WPAD_BUTTON_A) {
+                MenuItem& selected = extraMenu.getSelected();
+
+                switch (selected.m_index) {
+                case 0: // Changelog
+                    gSettings.m_state = ProgramState::ChangeLog;
+                    break;
+                case 1: // Controls
+                    gSettings.m_state = ProgramState::Controls;
+                    break;
+                case 2: // GX_S55_S1
+                    gSettings.m_state = ProgramState::GX_S55_S1;
+                    break;
+                case 3: // GX_S55_S2
+                    gSettings.m_state = ProgramState::GX_S55_S2;
+                    break;
+                default:
+                    break;
+                }
+            }
+
             if (btns_down & WPAD_BUTTON_B) {
                 gSettings.m_state = ProgramState::MainMenu;
+            }
+            break;
+        }
+        case ProgramState::Controls: {
+            if (btns_down & WPAD_BUTTON_B) {
+                gSettings.m_state = ProgramState::Extras;
             }
 
             gFont.printf(64, 64, "Game Controls", 46, util::white);
@@ -287,14 +329,103 @@ int main(int argc, char** argv)
         }
         case ProgramState::ChangeLog: {
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::MainMenu;
+                gSettings.m_state = ProgramState::Extras;
             }
 
             gFont.printf(64, 64, "What's new?", 56,
                          util::getColour(abs(sin(gTimer / 10)) * 255, abs(cos(gTimer / 10)) * 255, 0));
             gFont.printf(64, 96 + 28 * 1, "Version 1.1", 36, util::white);
-            gFont.printf(64, 96 + 32 * 2, "- Added changelog and controls screen", 26, util::white);
-            gFont.printf(64, 96 + 32 * 3, "- Added pause in the main scene (see Controls)", 26, util::white);
+            gFont.printf(64, 96 + 32 * 2, "- Added changelog and controls", 26, util::white);
+            gFont.printf(64, 96 + 32 * 3, "screen", 26, util::white);
+            gFont.printf(64, 96 + 32 * 4, "- Added pause in the main scene", 26, util::white);
+            gFont.printf(64, 96 + 32 * 5, "(see Controls)", 26, util::white);
+            gFont.printf(64, 96 + 32 * 6, "- Added scenes from an old", 26, util::white);
+            gFont.printf(64, 96 + 32 * 7, "project (GX_S55, see Extras)", 26, util::white);
+
+            break;
+        }
+        case ProgramState::GX_S55_S1: {
+            if (btns_down & WPAD_BUTTON_B) {
+                gSettings.m_state = ProgramState::Extras;
+            }
+
+            static f32 gxTimer      = 0;
+            const f32 xyBase        = (sin(gxTimer / 17.5f) * 20);
+            gMainCamera->position() = { xyBase - 20, xyBase - 10, (cos(gxTimer / 17.5f) * 20) - 20 };
+            gMainCamera->lookAt()   = { 0, 0, 0 };
+            gMainCamera->applyCamera();
+
+            GRRLIB_SetLightAmbient(util::black);
+            GRRLIB_SetLightDiff(0, gMainCamera->position(), 5, 2, util::getColour(0xFF, 0xAA, 0x00));
+
+            for (u32 lanes = 0; lanes < 10; lanes++) {
+                for (u32 i = 0; i < 15; i++) {
+                    GRRLIB_ObjectViewInv(lanes * 1.5f, 0, i * 2 / lanes, 0, 0, gxTimer * (3 + 1.15f * i), 1, 1, 1);
+                    GRRLIB_DrawCube(1, true, 0xFFFFFFFF);
+                }
+            }
+            gxTimer += 0.05f;
+
+            break;
+        }
+        case ProgramState::GX_S55_S2: {
+            if (btns_down & WPAD_BUTTON_B) {
+                gSettings.m_state = ProgramState::Extras;
+            }
+
+            static f32 cameraRotation  = 0;
+            static f32 cameraYOffset   = 7.5f;
+            constexpr f32 offset       = 20.0f;
+            constexpr f32 cameraOffset = 25.0f;
+            if (btns_held & WPAD_BUTTON_LEFT) {
+                cameraRotation -= 0.025f;
+            } else if (btns_held & WPAD_BUTTON_RIGHT) {
+                cameraRotation += 0.025f;
+            }
+
+            if (btns_held & WPAD_BUTTON_UP) {
+                cameraYOffset = std::min(cameraYOffset + 0.1f, 42.5f);
+            } else if (btns_held & WPAD_BUTTON_DOWN) {
+                cameraYOffset = std::max(cameraYOffset - 0.1f, 2.5f);
+            }
+
+            gMainCamera->lookAt() = { offset, 0, offset };
+            guVector& camPos      = gMainCamera->position();
+            camPos.x              = offset + sin(cameraRotation) * cameraOffset;
+            camPos.z              = offset + cos(cameraRotation) * cameraOffset;
+            camPos.y              = cameraYOffset;
+            gMainCamera->applyCamera();
+
+            GRRLIB_SetLightAmbient(0x000000FF);
+
+            guVector lightPos
+                = { abs(sin(gTimer / 4) * cameraOffset), 8 + abs(cos(gTimer)), abs(cos(gTimer / 4) * cameraOffset) };
+            GRRLIB_ObjectViewInv(lightPos.x, lightPos.y - 2, lightPos.z, 0, 0, 0, 1, 1, 1);
+            GRRLIB_DrawSphere(1, 10, 10, true, util::white);
+            GRRLIB_SetLightDiff(0, lightPos, 10, 10, 0x623499FF);
+
+            static float timer = 0;
+            const f32 stride   = 2;
+            for (u32 i = 0; i < 20; i++) {
+                for (u32 j = 0; j < 20; j++) {
+                    guVector pos = { i * stride, 0, j * stride };
+
+                    if (i == 10 && j == 10) {
+                        GRRLIB_ObjectViewInv(pos.x, 3, pos.z, 0, 0, 0, 1, 1, 1);
+                        GRRLIB_DrawCube(1, true, util::red);
+                    }
+
+                    pos.y += sin((gTimer * j) / 10) / 5;
+                    pos.y += cos((gTimer * i) / 10) / 10;
+
+                    GRRLIB_ObjectViewInv(pos.x, pos.y, pos.z, 0, 0, 0, 1, 1, 1);
+                    GRRLIB_DrawCylinder(1, 1.5f, 10, i % (u32)timer == 0 || j % (u32)timer == 0, util::white);
+                }
+            }
+            timer += 0.05f;
+            if (timer > 19.5f) {
+                timer = 0.5f;
+            }
 
             break;
         }

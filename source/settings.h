@@ -10,8 +10,11 @@ enum class ProgramState : u8 {
     // clang-format off
     MainMenu,
         Options,
-        Controls,
-        ChangeLog,
+        Extras,
+            ChangeLog,
+            Controls,
+            GX_S55_S1,
+            GX_S55_S2,
     // clang-format on
 
     MainGame
