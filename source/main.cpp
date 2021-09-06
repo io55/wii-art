@@ -15,13 +15,14 @@
 #include "menu.h"
 #include "settings.h"
 
-static inline void PopulateMenuWithStride(Menu& menu, Vector2<u32> position, u32 yStride, u32 fontSize,
+static inline void PopulateMenuWithStride(Menu& menu, u32 fontSize, Vector2<u32> position, Vector2<u32> stride,
                                           std::vector<const char*> items)
 {
-    u32 curY = position.m_y;
+    Vector2<u32> current = position;
     for (const char* item : items) {
-        menu.addMenuItem({ { position.m_x, curY }, item, fontSize, util::white, util::red });
-        curY += yStride;
+        menu.addMenuItem({ { current.m_x, current.m_y }, item, fontSize, util::white, util::red });
+        current.m_x += stride.m_x;
+        current.m_y += stride.m_y;
     }
 }
 
@@ -41,21 +42,22 @@ int main(int argc, char** argv)
 
     Menu mainMenu;
     const u32 mm_yStride = 80 + (icon->h * 0.5f);
-    PopulateMenuWithStride(mainMenu, { 64, mm_yStride }, 48, 46, { "START", "SETTINGS", "EXTRAS", "EXIT" });
+    PopulateMenuWithStride(mainMenu, 46, { 64, mm_yStride }, { 0, 48 }, { "Start", "Settings", "Extras", "Exit" });
     mainMenu.reset(0);
 
     Menu extraMenu;
-    PopulateMenuWithStride(extraMenu, { 64, 64 }, 48, 46, { "WHAT'S NEW?", "CONTROLS", "GX_S55_S1", "GX_S55_S2" });
+    PopulateMenuWithStride(extraMenu, 56, { 64, 64 }, { 32, 64 },
+                           { "What's new?", "Controls", "GX_S55_S1", "GX_S55_S2" });
     extraMenu.reset(0);
 
     Menu gameMenu;
-    PopulateMenuWithStride(gameMenu, { 32, 32 }, 24, 26,
-                           { "RANDOMISE SCENE", "RANDOMISE SIZE", "RANDOMISE COLOURS", "RANDOMISE LIGHTS" });
+    PopulateMenuWithStride(gameMenu, 26, { 32, 32 }, { 0, 24 },
+                           { "Randomise scene", "Randomise size", "Randomise colours", "Randomise lights" });
     gameMenu.addMenuItem({ { 32, 128 }, "PRESS 1 TO HIDE", 26, util::yellow, util::yellow, false });
     gameMenu.reset(0);
 
     Menu settingsMenu;
-    PopulateMenuWithStride(settingsMenu, { 64, 64 }, 48, 46, { "REPLACE", "REPLACE", "REPLACE", "REPLACE" });
+    PopulateMenuWithStride(settingsMenu, 46, { 64, 64 }, { 0, 48 }, { "REPLACE", "REPLACE", "REPLACE", "REPLACE" });
     settingsMenu.reset(0);
 
     /* Main menu flow acts as such:
@@ -330,9 +332,11 @@ int main(int argc, char** argv)
             gFont.printf(64, 64, "What's new?", 56,
                          util::getColour(abs(sin(gTimer / 10)) * 255, abs(cos(gTimer / 10)) * 255, 0));
             gFont.printf(64, 96 + 28 * 1, "Version 1.1", 36, util::white);
-            gFont.printf(64, 96 + 32 * 2, "- Added changelog and controls screen", 26, util::white);
-            gFont.printf(64, 96 + 32 * 3, "- Added pause in the main scene (see Controls)", 26, util::white);
-            gFont.printf(64, 96 + 32 * 4, "- Added scenes from an old project (GX_S55)", 26, util::white);
+            gFont.printf(64, 96 + 32 * 2, "- Added extras, changelog and controls", 26, util::white);
+            gFont.printf(64, 96 + 32 * 3, "  screen", 26, util::white);
+            gFont.printf(64, 96 + 32 * 4, "- Added a pause button in the main scene", 26, util::white);
+            gFont.printf(64, 96 + 32 * 5, "- Added scenes from an old project (GX_S55)", 26, util::white);
+            gFont.printf(64, 96 + 32 * 6, "- Internal code clean-up", 26, util::white);
 
             break;
         }
