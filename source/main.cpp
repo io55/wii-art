@@ -79,10 +79,10 @@ int main(int argc, char** argv)
 
         if (gSettings.m_state != ProgramState::MainGame && gSettings.m_state != ProgramState::GX_S55_S1
             && gSettings.m_state != ProgramState::GX_S55_S2) {
-            /* Work out the "step" size for each image to allow for a tiled
-             * background, using the scaling of the image as well and an extra
-             * pane offset by 1 for the gap left by only generating tiles on
-             * the screen but moving them in a direction
+            /* Calculate the positional offset and size for each image to allow
+             * seamless tiled background, using the scaling of the image as well
+             * as an extra pane that is offset by 1 to fill a gap also generated
+             * by this algorithm
              */
             f32 scale = 0.25f;
             u32 amtX  = std::ceil(rmode->fbWidth / (icon->w * scale)) + 1;
