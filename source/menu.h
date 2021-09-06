@@ -13,7 +13,7 @@ struct MenuItem {
     Vector2<u32> m_position = { 0, 0 };
 
     const char* m_text;
-    u32 m_textSize = 12; // aka fontSize
+    u32 m_textSize = 12; /* aka fontSize */
 
     u32 m_defaultCol  = util::white;
     u32 m_selectedCol = util::red;

@@ -6,7 +6,7 @@
 #include <type_traits>
 
 namespace util {
-// Should only be of numeric type
+/* Should only be of numeric type */
 template <typename T> static inline auto getRandom(T minimum, T maximum)
 {
     if constexpr (std::is_same<T, u32>::value) {
@@ -16,7 +16,7 @@ template <typename T> static inline auto getRandom(T minimum, T maximum)
     }
 }
 
-// Should only be of Vector2<T> type
+/* Should only be of Vector2<T> type */
 template <typename T> static inline auto getRandom(T extents) { return getRandom<T>(extents.m_x, extents.m_y); }
 
 } // namespace util
