@@ -91,14 +91,15 @@ int main(int argc, char** argv)
             static f32 scrollTimer = 0;
             for (u32 x = 0; x < amtX; x++) {
                 for (u32 y = 0; y < amtY; y++) {
-                    // stepX should evaluate to 160
+                    /* stepX should evaluate to 160 */
                     f32 stepX = rmode->fbWidth / (amtX - static_cast<f32>(1));
 
-                    // ((0 * 160) + {scrolling_offset}) - 160 = -160.? (fills
-                    // the gap left by moving tiles)
-                    // ((1 * 160) + {scrolling_offset}) - 160 = 0.?
-                    // ((2 * 160) + {scrolling_offset}) - 160 = 160.?
-                    // etc.
+                    /* ((0 * 160) + {scrolling_offset}) - 160 = -160.? (fills
+                     * the gap left by moving tiles)
+                     * ((1 * 160) + {scrolling_offset}) - 160 = 0.?
+                     * ((2 * 160) + {scrolling_offset}) - 160 = 160.?
+                     * etc.
+                     */
                     f32 xPos = ((x * stepX) + scrollTimer) - stepX;
                     while (xPos > rmode->fbWidth) {
                         xPos -= rmode->fbWidth + stepX;
@@ -118,10 +119,9 @@ int main(int argc, char** argv)
 
         switch (gSettings.m_state) {
         case ProgramState::FadeInText: {
-            u8 alpha  = std::min(255.0f, fadeTimer);
-            f32 scale = 1;
-            GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2),
-                           (rmode->xfbHeight / static_cast<float>(2)) - ((icon->h * scale) / 2), icon, 0, scale, scale,
+            u8 alpha = std::min(255.0f, fadeTimer);
+            GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - (icon->w / 2),
+                           (rmode->xfbHeight / static_cast<float>(2)) - (icon->h / 2), icon, 0, 1, 1,
                            util::getColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 255) {
@@ -138,10 +138,9 @@ int main(int argc, char** argv)
             break;
         }
         case ProgramState::FadeOutText: {
-            u8 alpha  = std::max(0.0f, fadeTimer);
-            f32 scale = 1;
-            GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2),
-                           (rmode->xfbHeight / static_cast<float>(2)) - ((icon->h * scale) / 2), icon, 0, scale, scale,
+            u8 alpha = std::max(0.0f, fadeTimer);
+            GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - (icon->w / 2),
+                           (rmode->xfbHeight / static_cast<float>(2)) - (icon->h / 2), icon, 0, 1, 1,
                            util::getColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 0) {
@@ -152,8 +151,9 @@ int main(int argc, char** argv)
             break;
         }
         case ProgramState::MainMenu: {
-            const f32 scale = 0.5f;
-            const u32 xpos  = (rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2);
+            constexpr f32 scale = 0.5f;
+            /* Place image in the middle of the screen */
+            const u32 xpos = (rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2);
             GRRLIB_DrawImg(xpos, 64, icon, 0, scale, scale, util::white);
 
             for (MenuItem& item : mainMenu.getItems()) {
@@ -170,8 +170,7 @@ int main(int argc, char** argv)
             if (btns_down & WPAD_BUTTON_A) {
                 MenuItem& selected = mainMenu.getSelected();
 
-                // See settings.h for the different states of the game
-                // Start, options, controls, whats new, exit
+                /* See settings.h for the different states of the game */
                 switch (selected.m_index) {
                 case 0:
                     gSettings.m_state = ProgramState::MainGame;
@@ -195,13 +194,13 @@ int main(int argc, char** argv)
         }
         case ProgramState::Options: {
             for (MenuItem& item : settingsMenu.getItems()) {
+                char text[0x20];
+
                 if (item.m_index == 0) {
-                    char text[0x20];
                     sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x,
                             gSettings.m_sceneObjCount.m_y);
                     item.m_text = text;
                 } else if (item.m_index == 1) {
-                    char text[0x20];
                     sprintf(text, "WF_Obj count: [%d / %d]", gSettings.m_wfObjCount.m_x, gSettings.m_wfObjCount.m_y);
                     item.m_text = text;
                 } else if (item.m_index == 2) {
@@ -221,11 +220,9 @@ int main(int argc, char** argv)
                         break;
                     }
 
-                    char text[0x20];
                     sprintf(text, "Spawn type: [%s]", type);
                     item.m_text = text;
                 } else if (item.m_index == 3) {
-                    char text[0x20];
                     sprintf(text, "Light count: [%d / %d]", gSettings.m_lightCount.m_x, gSettings.m_lightCount.m_y);
                     item.m_text = text;
                 }
@@ -284,16 +281,16 @@ int main(int argc, char** argv)
                 MenuItem& selected = extraMenu.getSelected();
 
                 switch (selected.m_index) {
-                case 0: // Changelog
+                case 0:
                     gSettings.m_state = ProgramState::ChangeLog;
                     break;
-                case 1: // Controls
+                case 1:
                     gSettings.m_state = ProgramState::Controls;
                     break;
-                case 2: // GX_S55_S1
+                case 2:
                     gSettings.m_state = ProgramState::GX_S55_S1;
                     break;
-                case 3: // GX_S55_S2
+                case 3:
                     gSettings.m_state = ProgramState::GX_S55_S2;
                     break;
                 default:
@@ -384,11 +381,9 @@ int main(int argc, char** argv)
                 cameraYOffset = std::max(cameraYOffset - 0.1f, 2.5f);
             }
 
-            gMainCamera->lookAt() = { offset, 0, offset };
-            guVector& camPos      = gMainCamera->position();
-            camPos.x              = offset + sin(cameraRotation) * cameraOffset;
-            camPos.z              = offset + cos(cameraRotation) * cameraOffset;
-            camPos.y              = cameraYOffset;
+            gMainCamera->lookAt()   = { offset, 0, offset };
+            gMainCamera->position() = { static_cast<f32>(offset + sin(cameraRotation) * cameraOffset), cameraYOffset,
+                                        static_cast<f32>(offset + cos(cameraRotation) * cameraOffset) };
             gMainCamera->applyCamera();
 
             GRRLIB_SetLightAmbient(0x000000FF);
@@ -415,7 +410,8 @@ int main(int argc, char** argv)
                     pos.y += cos((gTimer * i) / 10) / 10;
 
                     GRRLIB_ObjectViewInv(pos.x, pos.y, pos.z, 0, 0, 0, 1, 1, 1);
-                    GRRLIB_DrawCylinder(1, 1.5f, 10, i % (u32)timer == 0 || j % (u32)timer == 0, util::white);
+                    GRRLIB_DrawCylinder(
+                        1, 1.5f, 10, i % static_cast<u32>(timer) == 0 || j % static_cast<u32>(timer) == 0, util::white);
                 }
             }
             timer += 0.05f;
@@ -457,31 +453,31 @@ int main(int argc, char** argv)
                 } else if (btns_down & WPAD_BUTTON_A) {
                     MenuItem& item = gameMenu.getSelected();
 
-                    // SCENE
-                    if (item.m_index == 0) {
+                    switch (item.m_index) {
+                    case 0:
                         gSceneGenerator.setup();
-                    }
-                    // SIZE
-                    if (item.m_index == 1) {
+                        break;
+                    case 1:
                         for (auto& obj : gSceneGenerator.m_objects) {
                             obj.rngScaling();
                         }
                         for (auto& obj : gSceneGenerator.m_wfObjects) {
                             obj.rngScaling();
                         }
-                    }
-                    // COLOURS
-                    if (item.m_index == 2) {
+                        break;
+                    case 2:
                         for (auto& obj : gSceneGenerator.m_objects) {
                             obj.rngColour();
                         }
                         for (auto& obj : gSceneGenerator.m_wfObjects) {
                             obj.rngColour();
                         }
-                    }
-                    // LIGHTS
-                    if (item.m_index == 3) {
+                        break;
+                    case 3:
                         gSceneGenerator.randomiseLights();
+                        break;
+                    default:
+                        break;
                     }
                 }
             } else {
