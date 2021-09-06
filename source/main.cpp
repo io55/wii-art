@@ -23,7 +23,6 @@ int main(int argc, char** argv)
     WPAD_Init();
     WPAD_SetDataFormat(WPAD_CHAN_0, WPAD_FMT_BTNS);
 
-    // Initialise globals
     gMainCamera = new Camera({ 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 });
     gFont.init(terminus_ttf, terminus_ttf_size);
     GRRLIB_texImg* icon = GRRLIB_LoadTextureJPG(icon_jpg);
@@ -351,7 +350,7 @@ int main(int argc, char** argv)
 
             static f32 gxTimer      = 0;
             const f32 xyBase        = (sin(gxTimer / 17.5f) * 20);
-            gMainCamera->position() = { xyBase - 20, xyBase - 10, (cos(gxTimer / 17.5f) * 20) - 20 };
+            gMainCamera->position() = { xyBase - 20, xyBase - 10, static_cast<f32>((cos(gxTimer / 17.5) * 20) - 20) };
             gMainCamera->lookAt()   = { 0, 0, 0 };
             gMainCamera->applyCamera();
 
@@ -399,7 +398,8 @@ int main(int argc, char** argv)
             GRRLIB_SetLightAmbient(0x000000FF);
 
             guVector lightPos
-                = { abs(sin(gTimer / 4) * cameraOffset), 8 + abs(cos(gTimer)), abs(cos(gTimer / 4) * cameraOffset) };
+                = { static_cast<f32>(abs(sin(gTimer / 4) * cameraOffset)), static_cast<f32>(8 + abs(cos(gTimer))),
+                    static_cast<f32>(abs(cos(gTimer / 4) * cameraOffset)) };
             GRRLIB_ObjectViewInv(lightPos.x, lightPos.y - 2, lightPos.z, 0, 0, 0, 1, 1, 1);
             GRRLIB_DrawSphere(1, 10, 10, true, util::white);
             GRRLIB_SetLightDiff(0, lightPos, 10, 10, 0x623499FF);
