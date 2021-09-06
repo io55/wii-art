@@ -29,7 +29,7 @@ struct Object {
 
     inline void rngColour()
     {
-        m_colour = util::GetColour(util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF),
+        m_colour = util::getColour(util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x00, 0xFF),
                                    util::getRandom<u32>(0x00, 0xFF), util::getRandom<u32>(0x33, 0xFF));
     }
 

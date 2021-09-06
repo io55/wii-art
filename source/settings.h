@@ -7,8 +7,12 @@ enum class ProgramState : u8 {
     FadeInText,
     FadeOutText,
 
-    Menu,
-    Options,
+    // clang-format off
+    MainMenu,
+        Options,
+        Controls,
+        ChangeLog,
+    // clang-format on
 
     MainGame
 };
@@ -92,7 +96,7 @@ struct Settings {
             }
         } else {
             m_sceneObjCount.m_x--;
-            if (m_sceneObjCount.m_x == (s32)-1) {
+            if (static_cast<s32>(m_sceneObjCount.m_x) == -1) {
                 m_sceneObjCount.m_x += m_sceneObjCount.m_y;
             }
         }

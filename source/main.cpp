@@ -31,9 +31,12 @@ int main(int argc, char** argv)
     float fadeTimer = 0;
 
     Menu mainMenu;
-    mainMenu.addMenuItem({ { 64, 241 }, "START", 46, util::white, util::red });
-    mainMenu.addMenuItem({ { 64, 301 }, "SETTINGS", 46, util::white, util::red });
-    mainMenu.addMenuItem({ { 64, 361 }, "EXIT", 46, util::white, util::red });
+    const u32 mm_yStride = 80 + (icon->h * 0.5f);
+    mainMenu.addMenuItem({ { 64, mm_yStride }, "START", 36, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride + 48 }, "SETTINGS", 36, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 2 }, "CONTROLS", 36, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 3 }, "WHAT'S NEW?", 36, util::white, util::red });
+    mainMenu.addMenuItem({ { 64, mm_yStride + 48 * 4 }, "EXIT", 36, util::white, util::red });
     mainMenu.reset(0);
 
     Menu gameMenu;
@@ -66,6 +69,7 @@ int main(int argc, char** argv)
         WPAD_ScanPads();
 
         u32 btns_down = WPAD_ButtonsDown(WPAD_CHAN_0);
+        u32 btns_held = WPAD_ButtonsHeld(WPAD_CHAN_0);
 
         GRRLIB_2dMode();
 
@@ -101,7 +105,7 @@ int main(int argc, char** argv)
                         yPos -= rmode->xfbHeight + stepY;
                     }
 
-                    GRRLIB_DrawImg(xPos, yPos, icon, 0, scale, scale, util::GetColour(0x55, 0x55, 0x55, 0x64));
+                    GRRLIB_DrawImg(xPos, yPos, icon, 0, scale, scale, util::getColour(0x55, 0x55, 0x55, 0x64));
                 }
             }
             scrollTimer += 0.07571f;
@@ -113,7 +117,7 @@ int main(int argc, char** argv)
             f32 scale = 1;
             GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2),
                            (rmode->xfbHeight / static_cast<float>(2)) - ((icon->h * scale) / 2), icon, 0, scale, scale,
-                           util::GetColour(0xFF, 0xFF, 0xFF, alpha));
+                           util::getColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 255) {
                 static u32 logoTimer = 0;
@@ -133,16 +137,16 @@ int main(int argc, char** argv)
             f32 scale = 1;
             GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2),
                            (rmode->xfbHeight / static_cast<float>(2)) - ((icon->h * scale) / 2), icon, 0, scale, scale,
-                           util::GetColour(0xFF, 0xFF, 0xFF, alpha));
+                           util::getColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 0) {
-                gSettings.m_state = ProgramState::Menu;
+                gSettings.m_state = ProgramState::MainMenu;
             }
 
             fadeTimer -= 2.5f;
             break;
         }
-        case ProgramState::Menu: {
+        case ProgramState::MainMenu: {
             const f32 scale = 0.5f;
             const u32 xpos  = (rmode->fbWidth / static_cast<float>(2)) - ((icon->w * scale) / 2);
             GRRLIB_DrawImg(xpos, 64, icon, 0, scale, scale, util::white);
@@ -161,13 +165,27 @@ int main(int argc, char** argv)
             if (btns_down & WPAD_BUTTON_A) {
                 MenuItem& selected = mainMenu.getSelected();
 
-                if (selected.m_index == 0) {
+                // See settings.h for the different states of the game
+                // Start, options, controls, whats new, exit
+                switch (selected.m_index) {
+                case 0:
                     gSettings.m_state = ProgramState::MainGame;
                     gSceneGenerator.setup();
-                } else if (selected.m_index == 1) {
+                    break;
+                case 1:
                     gSettings.m_state = ProgramState::Options;
-                } else if (selected.m_index == 2) {
+                    break;
+                case 2:
+                    gSettings.m_state = ProgramState::Controls;
+                    break;
+                case 3:
+                    gSettings.m_state = ProgramState::ChangeLog;
+                    break;
+                case 4:
                     gExit = true;
+                    break;
+                default:
+                    break;
                 }
             }
 
@@ -220,7 +238,7 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::Menu;
+                gSettings.m_state = ProgramState::MainMenu;
             }
 
             if (btns_down & WPAD_BUTTON_RIGHT) {
@@ -248,15 +266,51 @@ int main(int argc, char** argv)
             }
             break;
         }
+        case ProgramState::Controls: {
+            if (btns_down & WPAD_BUTTON_B) {
+                gSettings.m_state = ProgramState::MainMenu;
+            }
+
+            gFont.printf(64, 64, "Game Controls", 46, util::white);
+            gFont.printf(64, 96 + 28 * 1, "1) 1 - hide UI", 26, util::white);
+            gFont.printf(64, 96 + 28 * 2, "   (after hiding UI)", 26, util::white);
+            gFont.printf(64, 96 + 28 * 3, "2) 2 - regenerate scene", 26, util::white);
+            gFont.printf(64, 96 + 28 * 4, "3) A - stop Camera rotation", 26, util::white);
+
+            gFont.printf(64, 244, "Menu-specific Controls", 46, util::white);
+            gFont.printf(64, (244 + 32) + 28 * 1, "1) DPAD Up / Down    - change selection", 26, util::white);
+            gFont.printf(64, (244 + 32) + 28 * 2, "2) DPAD Right / Left - modify selection", 26, util::white);
+            gFont.printf(64, (244 + 32) + 28 * 3, "3) A - select", 26, util::white);
+            gFont.printf(64, (244 + 32) + 28 * 4, "4) B - back", 26, util::white);
+
+            break;
+        }
+        case ProgramState::ChangeLog: {
+            if (btns_down & WPAD_BUTTON_B) {
+                gSettings.m_state = ProgramState::MainMenu;
+            }
+
+            gFont.printf(64, 64, "What's new?", 56,
+                         util::getColour(abs(sin(gTimer / 10)) * 255, abs(cos(gTimer / 10)) * 255, 0));
+            gFont.printf(64, 96 + 28 * 1, "Version 1.1", 36, util::white);
+            gFont.printf(64, 96 + 32 * 2, "- Added changelog and controls screen", 26, util::white);
+            gFont.printf(64, 96 + 32 * 3, "- Added pause in the main scene (see Controls)", 26, util::white);
+
+            break;
+        }
 
         case ProgramState::MainGame: {
-            guVector& position = gMainCamera->position();
-            position.x         = sin(gTimer * 0.05f) * 20;
-            position.z         = cos(gTimer * 0.05f) * 20;
-            position.y         = 10 + sin(gTimer * 0.01f) * 5;
+            static f32 camRotTimer = 0;
+            static guVector camPos;
+            if (!(!gSettings.m_showUI && btns_held & WPAD_BUTTON_A)) {
+                camPos.x = sin(camRotTimer * 0.05f) * 20;
+                camPos.z = cos(camRotTimer * 0.05f) * 20;
+                camPos.y = 10 + sin(camRotTimer * 0.01f) * 5;
+                camRotTimer += 0.05f;
+            }
 
-            guVector& look = gMainCamera->lookAt();
-            look.x = look.y = look.z = 0;
+            gMainCamera->position() = camPos;
+            gMainCamera->lookAt()   = { 0, 0, 0 };
             gMainCamera->applyCamera();
 
             gSceneGenerator.render();
@@ -264,7 +318,7 @@ int main(int argc, char** argv)
             GRRLIB_2dMode();
 
             if (gSettings.m_showUI) {
-                GRRLIB_Rectangle(32, 36, 226, 120, util::GetColour(0x44, 0x44, 0x44), true);
+                GRRLIB_Rectangle(32, 36, 226, 120, util::getColour(0x44, 0x44, 0x44), true);
                 for (MenuItem& item : gameMenu.getItems()) {
                     item.render(gFont);
                 }
@@ -314,7 +368,7 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::Menu;
+                gSettings.m_state = ProgramState::MainMenu;
                 mainMenu.reset(0);
             }
             break;
