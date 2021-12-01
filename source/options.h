@@ -1,7 +1,7 @@
-#ifndef _SETTINGS_H
-#define _SETTINGS_H
+#ifndef _OPTIONS_H
+#define _OPTIONS_H
 
-#include "math/vector2.h"
+#include "math/vector.h"
 
 enum class ProgramState : u8 {
     FadeInText,
@@ -31,18 +31,18 @@ enum class ObjectSpawnMode : u8 {
 // Simple implementation for bitflags
 static inline u8 operator&(ObjectSpawnMode a, ObjectSpawnMode b) { return static_cast<u8>(a) & static_cast<u8>(b); }
 
-struct Settings {
+struct Options {
     // Vector2 instances are used like: [CURRENT VALUE, MAX VALUE]
-    Vector2<u32> m_sceneObjCount = { 25, 50 };
-    Vector2<u32> m_wfObjCount    = { 25, 50 };
-    Vector2<u32> m_lightCount    = { 1, 3 };
+    math::Vector2<u8> m_sceneObjCount = { 25, 50 };
+    math::Vector2<u8> m_wfObjCount    = { 25, 50 };
+    math::Vector2<u8> m_lightCount    = { 1, 3 };
 
     ObjectSpawnMode m_spawnMode = ObjectSpawnMode::All;
     bool m_showUI               = true;
 
     ProgramState m_state = ProgramState::FadeInText;
 
-    inline void moveSpawnMode(const bool fwd)
+    void toggleOptionSpawnMode(const bool fwd)
     {
         if (fwd) {
             switch (m_spawnMode) {
@@ -76,48 +76,26 @@ struct Settings {
             }
         }
     }
-    inline void moveLightCount(const bool fwd)
+
+    void toggleOptionLightCount(const bool fwd) { moveSetting(m_lightCount, fwd); }
+    void toggleOptionObjectCount(const bool fwd) { moveSetting(m_sceneObjCount, fwd); }
+    void toggleOptionWfObjCount(const bool fwd) { moveSetting(m_wfObjCount, fwd); }
+
+private:
+    template <typename T> inline void moveSetting(math::Vector2<T>& toMove, const bool fwd)
     {
         if (fwd) {
-            m_lightCount.m_x++;
-            if (m_lightCount.m_x > m_lightCount.m_y) {
-                m_lightCount.m_x -= m_lightCount.m_y;
+            toMove.m_x++;
+            if (toMove.m_x > toMove.m_y) {
+                toMove.m_x = 0;
             }
         } else {
-            m_lightCount.m_x--;
-            if (m_lightCount.m_x == 0) {
-                m_lightCount.m_x += m_lightCount.m_y;
+            toMove.m_x--;
+            if ((s32)toMove.m_x == (s32)-1) {
+                toMove.m_x += toMove.m_y;
             }
         }
     }
-    inline void moveObjectCount(const bool fwd)
-    {
-        if (fwd) {
-            m_sceneObjCount.m_x++;
-            if (m_sceneObjCount.m_x > m_sceneObjCount.m_y) {
-                m_sceneObjCount.m_x = 0;
-            }
-        } else {
-            m_sceneObjCount.m_x--;
-            if (static_cast<s32>(m_sceneObjCount.m_x) == -1) {
-                m_sceneObjCount.m_x += m_sceneObjCount.m_y;
-            }
-        }
-    }
-    inline void moveWfObjCount(const bool fwd)
-    {
-        if (fwd) {
-            m_wfObjCount.m_x++;
-            if (m_wfObjCount.m_x > m_wfObjCount.m_y) {
-                m_wfObjCount.m_x = 0;
-            }
-        } else {
-            m_wfObjCount.m_x--;
-            if ((s32)m_wfObjCount.m_x == (s32)-1) {
-                m_wfObjCount.m_x += m_wfObjCount.m_y;
-            }
-        }
-    }
-} gSettings;
+} gOptions;
 
 #endif

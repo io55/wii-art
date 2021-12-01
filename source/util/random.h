@@ -1,7 +1,7 @@
 #ifndef _RANDOM_H
 #define _RANDOM_H
 
-#include "../math/vector2.h"
+#include "../math/vector.h"
 #include <gctypes.h>
 #include <type_traits>
 

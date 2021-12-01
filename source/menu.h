@@ -1,7 +1,7 @@
 #ifndef _MENU_H
 #define _MENU_H
 
-#include "math/vector2.h"
+#include "math/vector.h"
 #include "util/colour.h"
 #include "util/font.h"
 #include <gctypes.h>
@@ -10,7 +10,7 @@
 struct MenuItem {
     u32 m_index = 0;
 
-    Vector2<u32> m_position = { 0, 0 };
+    math::Vector2u m_position = { 0, 0 };
 
     const char* m_text;
     u32 m_textSize = 12; /* aka fontSize */
@@ -21,7 +21,7 @@ struct MenuItem {
     bool m_selected   = false;
     bool m_selectable = true;
 
-    inline MenuItem(Vector2<u32> pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol,
+    inline MenuItem(math::Vector2u pos, const char* text, u32 textSize, u32 defaultCol, u32 selectedCol,
                     bool selectable = true, u32 idx = 0)
         : m_index(idx)
         , m_position(pos)
@@ -33,7 +33,7 @@ struct MenuItem {
     {
     }
 
-    inline void render(util::Font& font)
+    inline void render(util::Font& font) const
     {
         font.printf(m_position.m_x, m_position.m_y, m_text, m_textSize, m_selected ? m_selectedCol : m_defaultCol);
     }

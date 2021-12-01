@@ -12,20 +12,24 @@
 
 #include "game/scenegenerator.cpp"
 #include "globals.h"
-#include "math/camera.cpp"
+#include "math/camera.h"
 #include "menu.h"
-#include "settings.h"
+#include "options.h"
 
-static inline void PopulateMenuWithStride(Menu& menu, u32 fontSize, Vector2<u32> position, Vector2<u32> stride,
+static inline void PopulateMenuWithStride(Menu& menu, u32 fontSize, math::Vector2u position, math::Vector2u stride,
                                           std::vector<const char*> items)
 {
-    Vector2<u32> current = position;
+    math::Vector2u current = position;
     for (const char* item : items) {
         menu.addMenuItem({ { current.m_x, current.m_y }, item, fontSize, util::white, util::red });
         current.m_x += stride.m_x;
         current.m_y += stride.m_y;
     }
 }
+
+enum class OptionMenuItems : u8 { ObjectCount = 0, WireframeObjectCount, SpawnMode, LightCount };
+enum class MainMenuItems : u8 { Start, Options, Extra, Quit };
+enum class ExtraMenuItems : u8 { ChangeLog, Controls, GX_S55_1, GX_S55_2 };
 
 int main(int argc, char** argv)
 {
@@ -42,24 +46,25 @@ int main(int argc, char** argv)
     float fadeTimer = 0;
 
     Menu mainMenu;
-    const u32 mm_yStride = 80 + (icon->h * 0.5f);
-    PopulateMenuWithStride(mainMenu, 46, { 64, mm_yStride }, { 0, 48 }, { "Start", "Settings", "Extras", "Exit" });
+    PopulateMenuWithStride(mainMenu, 46, math::Vector2u(64, 80 + static_cast<u32>(icon->h * 0.5f)),
+                           math::Vector2u(0, 48), { "Start", "Options", "Extras", "Exit" });
     mainMenu.reset(0);
 
     Menu extraMenu;
-    PopulateMenuWithStride(extraMenu, 56, { 64, 64 }, { 32, 64 },
+    PopulateMenuWithStride(extraMenu, 56, math::Vector2u(64, 64), math::Vector2u(32, 64),
                            { "What's new?", "Controls", "GX_S55_S1", "GX_S55_S2" });
     extraMenu.reset(0);
 
     Menu gameMenu;
-    PopulateMenuWithStride(gameMenu, 26, { 32, 32 }, { 0, 24 },
+    PopulateMenuWithStride(gameMenu, 26, math::Vector2u(32, 32), math::Vector2u(0, 24),
                            { "Randomise scene", "Randomise size", "Randomise colours", "Randomise lights" });
-    gameMenu.addMenuItem({ { 32, 128 }, "PRESS 1 TO HIDE", 26, util::yellow, util::yellow, false });
+    gameMenu.addMenuItem({ math::Vector2u(32, 128), "PRESS 1 TO HIDE", 26, util::yellow, util::yellow, false });
     gameMenu.reset(0);
 
-    Menu settingsMenu;
-    PopulateMenuWithStride(settingsMenu, 46, { 64, 64 }, { 0, 48 }, { "REPLACE", "REPLACE", "REPLACE", "REPLACE" });
-    settingsMenu.reset(0);
+    Menu optionsMenu;
+    PopulateMenuWithStride(optionsMenu, 46, math::Vector2u(64, 64), math::Vector2u(0, 48),
+                           { "REPLACE", "REPLACE", "REPLACE", "REPLACE" });
+    optionsMenu.reset(0);
 
     /* Main menu flow acts as such:
      * -> Image fades in
@@ -80,8 +85,8 @@ int main(int argc, char** argv)
 
         GRRLIB_2dMode();
 
-        if (gSettings.m_state != ProgramState::MainGame && gSettings.m_state != ProgramState::GX_S55_S1
-            && gSettings.m_state != ProgramState::GX_S55_S2) {
+        if (gOptions.m_state != ProgramState::MainGame && gOptions.m_state != ProgramState::GX_S55_S1
+            && gOptions.m_state != ProgramState::GX_S55_S2) {
             /* Calculate the positional offset and size for each image to allow
              * seamless tiled background, using the scaling of the image as well
              * as an extra pane that is offset by 1 to fill a gap also generated
@@ -117,10 +122,10 @@ int main(int argc, char** argv)
                     GRRLIB_DrawImg(xPos, yPos, icon, 0, scale, scale, util::getColour(0x55, 0x55, 0x55, 0x64));
                 }
             }
-            scrollTimer += 0.07571f;
+            scrollTimer += 0.25f;
         }
 
-        switch (gSettings.m_state) {
+        switch (gOptions.m_state) {
         case ProgramState::FadeInText: {
             u8 alpha = std::min(255.0f, fadeTimer);
             GRRLIB_DrawImg((rmode->fbWidth / static_cast<float>(2)) - (icon->w / 2),
@@ -130,8 +135,8 @@ int main(int argc, char** argv)
             if (alpha == 255) {
                 static u32 logoTimer = 0;
                 if (logoTimer > 64) {
-                    fadeTimer         = 255;
-                    gSettings.m_state = ProgramState::FadeOutText;
+                    fadeTimer        = 255;
+                    gOptions.m_state = ProgramState::FadeOutText;
                 }
                 logoTimer += 1;
                 break;
@@ -147,7 +152,7 @@ int main(int argc, char** argv)
                            util::getColour(0xFF, 0xFF, 0xFF, alpha));
 
             if (alpha == 0) {
-                gSettings.m_state = ProgramState::MainMenu;
+                gOptions.m_state = ProgramState::MainMenu;
             }
 
             fadeTimer -= 2.5f;
@@ -171,21 +176,20 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_A) {
-                MenuItem& selected = mainMenu.getSelected();
+                const MenuItem& selected = mainMenu.getSelected();
 
-                /* See settings.h for the different states of the game */
-                switch (selected.m_index) {
-                case 0:
-                    gSettings.m_state = ProgramState::MainGame;
+                switch ((MainMenuItems)selected.m_index) {
+                case MainMenuItems::Start:
+                    gOptions.m_state = ProgramState::MainGame;
                     gSceneGenerator.setup();
                     break;
-                case 1:
-                    gSettings.m_state = ProgramState::Options;
+                case MainMenuItems::Options:
+                    gOptions.m_state = ProgramState::Options;
                     break;
-                case 2:
-                    gSettings.m_state = ProgramState::Extras;
+                case MainMenuItems::Extra:
+                    gOptions.m_state = ProgramState::Extras;
                     break;
-                case 3:
+                case MainMenuItems::Quit:
                     gExit = true;
                     break;
                 default:
@@ -196,19 +200,25 @@ int main(int argc, char** argv)
             break;
         }
         case ProgramState::Options: {
-            for (MenuItem& item : settingsMenu.getItems()) {
+            for (MenuItem& item : optionsMenu.getItems()) {
                 char text[0x20];
+                memset(text, '\0', 0x20);
 
-                if (item.m_index == 0) {
-                    sprintf(text, "Object count: [%d / %d]", gSettings.m_sceneObjCount.m_x,
-                            gSettings.m_sceneObjCount.m_y);
-                    item.m_text = text;
-                } else if (item.m_index == 1) {
-                    sprintf(text, "WF_Obj count: [%d / %d]", gSettings.m_wfObjCount.m_x, gSettings.m_wfObjCount.m_y);
-                    item.m_text = text;
-                } else if (item.m_index == 2) {
+                switch ((OptionMenuItems)item.m_index) {
+                case OptionMenuItems::ObjectCount:
+                    sprintf(text, "Object count: [%d / %d]", gOptions.m_sceneObjCount.m_x,
+                            gOptions.m_sceneObjCount.m_y);
+                    break;
+                case OptionMenuItems::WireframeObjectCount:
+                    sprintf(text, "WF obj count: [%d / %d]", gOptions.m_wfObjCount.m_x, gOptions.m_wfObjCount.m_y);
+                    break;
+                case OptionMenuItems::LightCount:
+                    sprintf(text, "Light count: [%d / %d]", gOptions.m_lightCount.m_x, gOptions.m_lightCount.m_y);
+                    break;
+                case OptionMenuItems::SpawnMode: {
                     char type[0x10];
-                    switch (gSettings.m_spawnMode) {
+
+                    switch (gOptions.m_spawnMode) {
                     case ObjectSpawnMode::All:
                         sprintf(type, "All");
                         break;
@@ -224,46 +234,61 @@ int main(int argc, char** argv)
                     }
 
                     sprintf(text, "Spawn type: [%s]", type);
-                    item.m_text = text;
-                } else if (item.m_index == 3) {
-                    sprintf(text, "Light count: [%d / %d]", gSettings.m_lightCount.m_x, gSettings.m_lightCount.m_y);
-                    item.m_text = text;
+                    break;
+                }
+                default:
+                    break;
                 }
 
+                item.m_text = text;
                 item.render(gFont);
             }
 
             if (btns_down & WPAD_BUTTON_UP) {
-                settingsMenu.moveSelected(MenuDirection::Up);
+                optionsMenu.moveSelected(MenuDirection::Up);
             } else if (btns_down & WPAD_BUTTON_DOWN) {
-                settingsMenu.moveSelected(MenuDirection::Down);
+                optionsMenu.moveSelected(MenuDirection::Down);
             }
 
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::MainMenu;
+                gOptions.m_state = ProgramState::MainMenu;
             }
 
             if (btns_down & WPAD_BUTTON_RIGHT) {
-                MenuItem& item = settingsMenu.getSelected();
-                if (item.m_index == 0) {
-                    gSettings.moveObjectCount(true);
-                } else if (item.m_index == 1) {
-                    gSettings.moveWfObjCount(true);
-                } else if (item.m_index == 2) {
-                    gSettings.moveSpawnMode(true);
-                } else if (item.m_index == 3) {
-                    gSettings.moveLightCount(true);
+                const MenuItem& item = optionsMenu.getSelected();
+                switch (item.m_index) {
+                case OptionMenuItems::ObjectCount:
+                    gOptions.toggleOptionObjectCount(true);
+                    break;
+                case OptionMenuItems::WireframeObjectCount:
+                    gOptions.toggleOptionWfObjCount(true);
+                    break;
+                case OptionMenuItems::SpawnMode:
+                    gOptions.toggleOptionSpawnMode(true);
+                    break;
+                case OptionMenuItems::LightCount:
+                    gOptions.toggleOptionLightCount(true);
+                    break;
+                default:
+                    break;
                 }
             } else if (btns_down & WPAD_BUTTON_LEFT) {
-                MenuItem& item = settingsMenu.getSelected();
-                if (item.m_index == 0) {
-                    gSettings.moveObjectCount(false);
-                } else if (item.m_index == 1) {
-                    gSettings.moveWfObjCount(false);
-                } else if (item.m_index == 2) {
-                    gSettings.moveSpawnMode(false);
-                } else if (item.m_index == 3) {
-                    gSettings.moveLightCount(false);
+                const MenuItem& item = optionsMenu.getSelected();
+                switch ((OptionMenuItems)item.m_index) {
+                case OptionMenuItems::ObjectCount:
+                    gOptions.toggleOptionObjectCount(false);
+                    break;
+                case OptionMenuItems::WireframeObjectCount:
+                    gOptions.toggleOptionWfObjCount(false);
+                    break;
+                case OptionMenuItems::SpawnMode:
+                    gOptions.toggleOptionSpawnMode(false);
+                    break;
+                case OptionMenuItems::LightCount:
+                    gOptions.toggleOptionLightCount(false);
+                    break;
+                default:
+                    break;
                 }
             }
             break;
@@ -283,18 +308,18 @@ int main(int argc, char** argv)
             if (btns_down & WPAD_BUTTON_A) {
                 MenuItem& selected = extraMenu.getSelected();
 
-                switch (selected.m_index) {
-                case 0:
-                    gSettings.m_state = ProgramState::ChangeLog;
+                switch ((ExtraMenuItems)selected.m_index) {
+                case ExtraMenuItems::ChangeLog:
+                    gOptions.m_state = ProgramState::ChangeLog;
                     break;
-                case 1:
-                    gSettings.m_state = ProgramState::Controls;
+                case ExtraMenuItems::Controls:
+                    gOptions.m_state = ProgramState::Controls;
                     break;
-                case 2:
-                    gSettings.m_state = ProgramState::GX_S55_S1;
+                case ExtraMenuItems::GX_S55_1:
+                    gOptions.m_state = ProgramState::GX_S55_S1;
                     break;
-                case 3:
-                    gSettings.m_state = ProgramState::GX_S55_S2;
+                case ExtraMenuItems::GX_S55_2:
+                    gOptions.m_state = ProgramState::GX_S55_S2;
                     break;
                 default:
                     break;
@@ -302,13 +327,13 @@ int main(int argc, char** argv)
             }
 
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::MainMenu;
+                gOptions.m_state = ProgramState::MainMenu;
             }
             break;
         }
         case ProgramState::Controls: {
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::Extras;
+                gOptions.m_state = ProgramState::Extras;
             }
 
             gFont.printf(64, 64, "Game Controls", 46, util::white);
@@ -327,7 +352,7 @@ int main(int argc, char** argv)
         }
         case ProgramState::ChangeLog: {
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::Extras;
+                gOptions.m_state = ProgramState::Extras;
             }
 
             gFont.printf(64, 64, "What's new?", 56,
@@ -343,7 +368,7 @@ int main(int argc, char** argv)
         }
         case ProgramState::GX_S55_S1: {
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::Extras;
+                gOptions.m_state = ProgramState::Extras;
             }
 
             static f32 gxTimer      = 0;
@@ -367,7 +392,7 @@ int main(int argc, char** argv)
         }
         case ProgramState::GX_S55_S2: {
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::Extras;
+                gOptions.m_state = ProgramState::Extras;
             }
 
             static f32 cameraRotation  = 0;
@@ -430,7 +455,7 @@ int main(int argc, char** argv)
         case ProgramState::MainGame: {
             static f32 camRotTimer = 0;
             static guVector camPos;
-            if (!(!gSettings.m_showUI && btns_held & WPAD_BUTTON_A)) {
+            if (!(!gOptions.m_showUI && btns_held & WPAD_BUTTON_A)) {
                 camPos.x = sin(camRotTimer * 0.05f) * 20;
                 camPos.z = cos(camRotTimer * 0.05f) * 20;
                 camPos.y = 10 + sin(camRotTimer * 0.01f) * 5;
@@ -445,7 +470,7 @@ int main(int argc, char** argv)
 
             GRRLIB_2dMode();
 
-            if (gSettings.m_showUI) {
+            if (gOptions.m_showUI) {
                 GRRLIB_Rectangle(32, 36, 226, 120, util::getColour(0x44, 0x44, 0x44), true);
                 for (MenuItem& item : gameMenu.getItems()) {
                     item.render(gFont);
@@ -455,8 +480,10 @@ int main(int argc, char** argv)
                     gameMenu.moveSelected(MenuDirection::Up);
                 } else if (btns_down & WPAD_BUTTON_DOWN) {
                     gameMenu.moveSelected(MenuDirection::Down);
-                } else if (btns_down & WPAD_BUTTON_A) {
-                    MenuItem& item = gameMenu.getSelected();
+                }
+
+                if (btns_down & WPAD_BUTTON_A) {
+                    const MenuItem& item = gameMenu.getSelected();
 
                     switch (item.m_index) {
                     case 0:
@@ -485,18 +512,16 @@ int main(int argc, char** argv)
                         break;
                     }
                 }
-            } else {
-                if (btns_down & WPAD_BUTTON_2) {
-                    gSceneGenerator.setup();
-                }
+            } else if (btns_down & WPAD_BUTTON_2) {
+                gSceneGenerator.setup();
             }
 
             if (btns_down & WPAD_BUTTON_1) {
-                gSettings.m_showUI = !gSettings.m_showUI;
+                gOptions.m_showUI = !gOptions.m_showUI;
             }
 
             if (btns_down & WPAD_BUTTON_B) {
-                gSettings.m_state = ProgramState::MainMenu;
+                gOptions.m_state = ProgramState::MainMenu;
                 mainMenu.reset(0);
             }
             break;
