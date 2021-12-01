@@ -1,2 +1,2 @@
-# ART_IO55
+# IO55 Wii Art
 A Wii homebrew program that aims to generate aesthetically pleasing art
